@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/resousces/data/data.dat"/>
+    <qresource prefix="/">
+        <file>data/splash.jpg</file>
+        <file>data/images/connected.png</file>
+        <file>data/images/disconnected.png</file>
+    </qresource>
+</RCC>
