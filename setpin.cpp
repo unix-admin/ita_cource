@@ -5,6 +5,7 @@ setPIN::setPIN(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::setPIN)
 {
+    checkPin =0;
     ui->setupUi(this);
     connect(ui->buttonBox,SIGNAL(accepted()),this,SLOT(buttonOKClicked()));
     connect(ui->buttonBox,SIGNAL(rejected()),this, SLOT(close()));
@@ -15,7 +16,7 @@ setPIN::~setPIN()
     delete ui;
 }
 
-setPIN::getTwitter(Twitter *clsTwitter)
+void setPIN::getTwitter(Twitter *clsTwitter)
 {
     twitter = clsTwitter;
 
@@ -24,6 +25,6 @@ setPIN::getTwitter(Twitter *clsTwitter)
 void setPIN::buttonOKClicked()
 {
  twitter->setPin(ui->lineEdit->text().toStdString());
-
+ checkPin = 1;
  close();
 }

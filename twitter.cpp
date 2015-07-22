@@ -3,6 +3,14 @@
 #include <QDebug>
 #include <QString>
 #include <QUrlQuery>
+#include <ctime>
+#include <iostream>
+#include <QByteArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QVariant>
+#include <QMap>
 
 Twitter::Twitter()
 {
@@ -11,13 +19,15 @@ Twitter::Twitter()
     request_token_url = "https://api.twitter.com/oauth/request_token";
     request_token_query_args = "oauth_callback=oob";
     authorize_url = "https://api.twitter.com/oauth/authorize";
-    access_token_url = "https://api.twitter.com/oauth/access_token";    
+    access_token_url = "https://api.twitter.com/oauth/access_token";
+    oauthSignature = "";
     oauthConsumer = new OAuth::Consumer(key,secret);
     oauthClient = new OAuth::Client(oauthConsumer);
     request_token = new OAuth::Token;
-    accessTokenKey = "";
-    accessTokenSecret="";
+    accessTokenKey = "3370490014-9Mxv22sir4OgEGYgLkVMuux9u6u7W6aRqPzFBXg";
+    accessTokenSecret="mGIf3QINhI2ZaIAjy9u1klq2pnhcmrPajapMQ3P89Bx7U";
     displayName = "";
+    userTimeLineMap = new QMap<QString, QVariant>;
 
 
 }
@@ -26,7 +36,10 @@ QUrl Twitter::getRequestToken(){
 
     std::string base_request_token_url = request_token_url + (request_token_query_args.empty() ? std::string("") : (std::string("?")+request_token_query_args) );
     std::string oAuthQueryString = oauthClient->getURLQueryString( OAuth::Http::Get, base_request_token_url);
-    std::string url = request_token_url + "?" + oAuthQueryString;    
+    std::string url = request_token_url + "?" + oAuthQueryString;
+    QString temp =  QString::fromStdString(url).replace("#", "?");
+    oauthSignature = QUrlQuery(temp).queryItemValue("oauth_signature").toStdString();
+    qDebug() << oauthClient->returnSignature().c_str();
     return QString::fromStdString(url);
 }
 
@@ -51,7 +64,6 @@ QUrl Twitter::accessToken()
     result = QString::fromStdString(access_token_url + "?"+oauthClient->getURLQueryString( OAuth::Http::Get, access_token_url, std::string( "" ), true ));
     return result;
 
-
 }
 
 void Twitter::setPin(std::string PIN)
@@ -60,7 +72,7 @@ void Twitter::setPin(std::string PIN)
 
 }
 
-void Twitter::setAccesshToken(std::string response)
+void Twitter::setAccessToken(std::string response)
 {
      OAuth::KeyValuePairs access_token_resp_data = OAuth::ParseKeyValuePairs(response);
      OAuth::Token access_token = OAuth::Token::extract( access_token_resp_data );
@@ -74,6 +86,69 @@ void Twitter::setAccesshToken(std::string response)
      qDebug() << accessTokenSecret.c_str();
      qDebug() << displayName.c_str();
 
+
+}
+
+void Twitter::getUserTimeline()
+{
+    QNetworkAccessManager *manager = new QNetworkAccessManager;
+    connect(manager, SIGNAL(finished(QNetworkReply*)),this, SLOT(replyFinished(QNetworkReply*)));
+    QNetworkRequest request;
+    std::time_t t = std::time(0);
+    QByteArray twitterRequest;    
+    std::string oauth_protected_resource = "https://api.twitter.com/1.1/statuses/home_timeline.json";
+    std::string oauth_protected_resource_params = "count=5";
+    OAuth::Consumer consumer(key, secret);
+    OAuth::Token token(accessTokenKey, accessTokenSecret);
+    OAuth::Client oauth1(&consumer, &token);
+    std::string oAuthQueryString = oauth1.getURLQueryString(OAuth::Http::Get, oauth_protected_resource + "?" + oauth_protected_resource_params);
+
+
+    request.setUrl(QUrl(QString::fromStdString("https://api.twitter.com/1.1/statuses/home_timeline.json?"+oAuthQueryString)));
+
+   QNetworkReply* reply= manager->get(request);
+   connect( reply, SIGNAL(finished()),this, SLOT(replyFinished()));
+   qDebug() << oauth_protected_resource.c_str()<< "?" << oAuthQueryString.c_str();
+
+
+
+
+   std::string tmp;
+}
+
+void Twitter::fin()
+{
+    qDebug()<< "Finished";
+}
+
+QByteArray Twitter::nonce()
+{
+        static bool firstTime = true;
+        if (firstTime) {
+            firstTime = false;
+            qsrand(QTime::currentTime().msec());
+        }
+        QString u = QString::number(QDateTime::currentDateTimeUtc().toTime_t());
+        u.append(QString::number(qrand()));
+        return u.toLatin1();
+}
+
+
+void Twitter::replyFinished()
+{
+      QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+      if (reply->error() == QNetworkReply::NoError)
+
+        {
+          QByteArray qb = "{\"fuckingJsonFromTwitter\": ";
+          qb.append(reply->readAll());
+          qb.append("}");
+          *userTimeLineMap = QJsonDocument::fromJson(qb).toVariant().toMap();
+
+        }
+      else qDebug()<<reply->errorString();
+      emit fin();
+      reply->deleteLater();
 }
 
 

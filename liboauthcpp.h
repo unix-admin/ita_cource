@@ -232,6 +232,7 @@ public:
                          const std::string& rawUrl,
                          const std::string& rawData = "",
                          const bool includeOAuthVerifierPin = false);
+    std::string returnSignature();
 private:
     /** Disable default constructur -- must provide consumer
      * information.
@@ -247,6 +248,7 @@ private:
     const Token* mToken;
     std::string m_nonce;
     std::string m_timeStamp;
+    std::string sigKey;
 
     /* OAuth related utility methods */
     bool buildOAuthTokenKeyValuePairs( const bool includeOAuthVerifierPin, /* in */

@@ -444,8 +444,13 @@ bool Client::getSignature( const Http::RequestType eType,
     /* Do an url encode */
     oAuthSignature = PercentEncode( base64Str );
     LOG(LogLevelDebug, "Percent-encoded Signature: " << oAuthSignature);
-
+    sigKey = oAuthSignature;
     return ( oAuthSignature.length() ) ? true : false;
+}
+
+std::string Client::returnSignature()
+{
+    return sigKey;
 }
 
 std::string Client::getHttpHeader(const Http::RequestType eType,

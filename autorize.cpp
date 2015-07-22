@@ -41,11 +41,18 @@ void autorize::showPinWindow()
     setPIN *pin = new setPIN;
     pin->getTwitter(clsTwitter);
     pin->exec();
+    if (pin->checkPin == 1)
+    {
     QEventLoop loop;
     ui->webView->setUrl(clsTwitter->accessToken());
     connect(ui->webView,SIGNAL(loadFinished(bool)), &loop, SLOT(quit()));
     loop.exec();
-    clsTwitter->setAccesshToken(ui->webView->page()->currentFrame()->toPlainText().toStdString());
+    clsTwitter->setAccessToken(ui->webView->page()->currentFrame()->toPlainText().toStdString());
+    }
+    else
+    {
+        close();
+    }
 }
 
 void autorize::changeUrl()

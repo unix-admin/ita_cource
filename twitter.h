@@ -7,6 +7,9 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QObject>
+#include <QString>
+#include <QList>
+#include <QTextCodec>
 
 class Twitter : public QObject
 {
@@ -18,8 +21,15 @@ public:
     QUrl getPIN();
     QUrl accessToken();
     void setPin(std::string PIN);
-    void setAccesshToken(std::string response);
+    void setAccessToken(std::string response);
+    void getUserTimeline();
 
+struct requestParamerers{
+    QByteArray name;
+    QByteArray value;
+};
+public slots:
+        void fin();
 
 signals: finished();
 
@@ -34,12 +44,15 @@ private : std::string key;
           std::string accessTokenKey;
           std::string accessTokenSecret;
           std::string displayName;
+          std::string oauthSignature;
           OAuth::Client *oauthClient;
           OAuth::Consumer *oauthConsumer;
           OAuth::Token *request_token;
+          QByteArray nonce();
+          QMap<QString, QVariant> *userTimeLineMap;
 
 private slots:
-
+       void replyFinished();
 
 
 };
