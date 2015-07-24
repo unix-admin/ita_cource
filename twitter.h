@@ -17,6 +17,7 @@ class Twitter : public QObject
     Q_OBJECT
 public:
     Twitter(QTextEdit *edit);
+    Twitter();
     QUrl getRequestToken();
     void setOauthToken(std::string response);
     QUrl getPIN();

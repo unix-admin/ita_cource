@@ -8,6 +8,7 @@
 
 #include "setpin.h"
 #include "autorize.h"
+#include "usersearch.h"
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -28,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton->setEnabled(false);
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(buttonClicked()));    
     connect(ui->textEdit,SIGNAL(textChanged()),this, SLOT(splashInvisible()));
+    connect(ui->userSearchButton,SIGNAL(clicked(bool)),SLOT(userSearch()));
     networkConnection();
 }
 
@@ -117,4 +119,10 @@ void MainWindow::updateUserTimeLine()
 void MainWindow::splashInvisible()
 {
     ui->label_2->setVisible(false);
+}
+
+void MainWindow::userSearch()
+{
+    UserSearch *userSearchForm = new UserSearch;
+    userSearchForm->show();
 }

@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     urlencode.cpp \
     twitter.cpp \
     setpin.cpp \
-    autorize.cpp
+    autorize.cpp \
+    usersearch.cpp
 
 HEADERS  += mainwindow.h \
     base64.h \
@@ -31,11 +32,13 @@ HEADERS  += mainwindow.h \
     urlencode.h \
     twitter.h \
     setpin.h \
-    autorize.h
+    autorize.h \
+    usersearch.h
 
 FORMS    += mainwindow.ui \
     setpin.ui \
-    autorize.ui
+    autorize.ui \
+    usersearch.ui
 
 RESOURCES += \
     resources.qrc

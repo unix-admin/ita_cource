@@ -32,6 +32,11 @@ Twitter::Twitter(QTextEdit *edit)
     returnText = edit;
 }
 
+Twitter::Twitter()
+{
+
+}
+
 QUrl Twitter::getRequestToken()
 {
 
@@ -109,7 +114,7 @@ void Twitter::userSerch(QString userName)
     connect(manager, SIGNAL(finished(QNetworkReply*)),this, SLOT(replyFinished(QNetworkReply*)));
     QNetworkRequest request;
     std::string oauth_protected_resource = "https://api.twitter.com/1.1/users/search.json";
-    std::string oauth_protected_resource_params =  "q="+QUrl::toPercentEncoding(userName).toStdString();
+    std::string oauth_protected_resource_params =  "q="+QUrl::toPercentEncoding(userName).toStdString()+"&count=5";
     OAuth::Consumer consumer(key, secret);
     OAuth::Token token(accessTokenKey, accessTokenSecret);
     OAuth::Client oauth1(&consumer, &token);

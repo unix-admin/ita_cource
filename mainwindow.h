@@ -34,6 +34,7 @@ private slots:
     void replyFinished(QNetworkReply*);
     void updateUserTimeLine();
     void splashInvisible();
+    void userSearch();
 
 private:
 
