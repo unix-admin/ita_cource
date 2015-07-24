@@ -32,6 +32,8 @@ private slots:
     void networkError();
     void networkOk();
     void replyFinished(QNetworkReply*);
+    void updateUserTimeLine();
+    void splashInvisible();
 
 private:
 

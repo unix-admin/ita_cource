@@ -12,7 +12,7 @@
 #include <QVariant>
 #include <QMap>
 
-Twitter::Twitter()
+Twitter::Twitter(QTextEdit *edit)
 {
     key = "GgqXEJQD6rglvtLRnSGGPgB75"; // Key from Twitter
     secret = "hffrwdXOxsdOZ14JDPONP3VbhPGcYAuLkCAfSC6k1JJPMmjEpi"; // Secret from Twitter
@@ -28,11 +28,12 @@ Twitter::Twitter()
     accessTokenSecret="mGIf3QINhI2ZaIAjy9u1klq2pnhcmrPajapMQ3P89Bx7U";
     displayName = "";
     userTimeLineMap = new QMap<QString, QVariant>;
-
-
+    userTimeLine = new QString;
+    returnText = edit;
 }
 
-QUrl Twitter::getRequestToken(){
+QUrl Twitter::getRequestToken()
+{
 
     std::string base_request_token_url = request_token_url + (request_token_query_args.empty() ? std::string("") : (std::string("?")+request_token_query_args) );
     std::string oAuthQueryString = oauthClient->getURLQueryString( OAuth::Http::Get, base_request_token_url);
@@ -45,9 +46,7 @@ QUrl Twitter::getRequestToken(){
 
 void Twitter::setOauthToken(std::string response)
 {
-
     *request_token = OAuth::Token::extract(response);
-
 }
 
 QUrl Twitter::getPIN()
@@ -63,7 +62,6 @@ QUrl Twitter::accessToken()
     *oauthClient = OAuth::Client(oauthConsumer, request_token);
     result = QString::fromStdString(access_token_url + "?"+oauthClient->getURLQueryString( OAuth::Http::Get, access_token_url, std::string( "" ), true ));
     return result;
-
 }
 
 void Twitter::setPin(std::string PIN)
@@ -81,12 +79,6 @@ void Twitter::setAccessToken(std::string response)
      std::pair<OAuth::KeyValuePairs::iterator, OAuth::KeyValuePairs::iterator> screen_name_its = access_token_resp_data.equal_range("screen_name");
          for(OAuth::KeyValuePairs::iterator it = screen_name_its.first; it != screen_name_its.second; it++)
             displayName = it->second;
-
-     qDebug() << accessTokenKey.c_str();
-     qDebug() << accessTokenSecret.c_str();
-     qDebug() << displayName.c_str();
-
-
 }
 
 void Twitter::getUserTimeline()
@@ -94,31 +86,65 @@ void Twitter::getUserTimeline()
     QNetworkAccessManager *manager = new QNetworkAccessManager;
     connect(manager, SIGNAL(finished(QNetworkReply*)),this, SLOT(replyFinished(QNetworkReply*)));
     QNetworkRequest request;
-    std::time_t t = std::time(0);
-    QByteArray twitterRequest;    
     std::string oauth_protected_resource = "https://api.twitter.com/1.1/statuses/home_timeline.json";
-    std::string oauth_protected_resource_params = "count=5";
+    std::string oauth_protected_resource_params = "count=100";
     OAuth::Consumer consumer(key, secret);
     OAuth::Token token(accessTokenKey, accessTokenSecret);
     OAuth::Client oauth1(&consumer, &token);
     std::string oAuthQueryString = oauth1.getURLQueryString(OAuth::Http::Get, oauth_protected_resource + "?" + oauth_protected_resource_params);
-
-
     request.setUrl(QUrl(QString::fromStdString("https://api.twitter.com/1.1/statuses/home_timeline.json?"+oAuthQueryString)));
-
-   QNetworkReply* reply= manager->get(request);
-   connect( reply, SIGNAL(finished()),this, SLOT(replyFinished()));
-   qDebug() << oauth_protected_resource.c_str()<< "?" << oAuthQueryString.c_str();
-
-
-
-
-   std::string tmp;
+    QNetworkReply* reply= manager->get(request);
+    connect( reply, SIGNAL(finished()),this, SLOT(replyFinished()));
+    qDebug() << oauth_protected_resource.c_str()<< "?" << oAuthQueryString.c_str();
 }
+
+QString Twitter::userTimeLineText()
+{
+    return *userTimeLine;
+}
+
+void Twitter::userSerch(QString userName)
+{
+    QNetworkAccessManager *manager = new QNetworkAccessManager;
+    connect(manager, SIGNAL(finished(QNetworkReply*)),this, SLOT(replyFinished(QNetworkReply*)));
+    QNetworkRequest request;
+    std::string oauth_protected_resource = "https://api.twitter.com/1.1/users/search.json";
+    std::string oauth_protected_resource_params =  "q="+QUrl::toPercentEncoding(userName).toStdString();
+    OAuth::Consumer consumer(key, secret);
+    OAuth::Token token(accessTokenKey, accessTokenSecret);
+    OAuth::Client oauth1(&consumer, &token);
+    std::string oAuthQueryString = oauth1.getURLQueryString(OAuth::Http::Get, oauth_protected_resource + "?" + oauth_protected_resource_params);
+    request.setUrl(QUrl(QString::fromStdString("https://api.twitter.com/1.1/users/search.json?"+oAuthQueryString)));
+    QNetworkReply* reply= manager->get(request);
+    connect( reply, SIGNAL(finished()),this, SLOT(userSearchFinished()));
+}
+
 
 void Twitter::fin()
 {
     qDebug()<< "Finished";
+}
+
+void Twitter::parseUserTimelineFinished()
+{
+
+    returnText->setHtml(*userTimeLine);
+    returnText->setVisible(true);
+}
+
+void Twitter::userSearchFinished()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (reply->error() == QNetworkReply::NoError)
+      {
+        QByteArray qb = "{\"fuckingJsonFromTwitter\": ";
+        qb.append(reply->readAll());
+        qb.append("}");
+        *userTimeLineMap = QJsonDocument::fromJson(qb).toVariant().toMap();
+        parseUserTimeline(userTimeLineMap);
+      }
+    else qDebug()<<reply->errorString();
+    reply->deleteLater();
 }
 
 QByteArray Twitter::nonce()
@@ -138,17 +164,45 @@ void Twitter::replyFinished()
 {
       QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
       if (reply->error() == QNetworkReply::NoError)
-
         {
           QByteArray qb = "{\"fuckingJsonFromTwitter\": ";
           qb.append(reply->readAll());
-          qb.append("}");
+          qb.append("}");          
           *userTimeLineMap = QJsonDocument::fromJson(qb).toVariant().toMap();
-
+          parseUserTimeline(userTimeLineMap);
         }
       else qDebug()<<reply->errorString();
-      emit fin();
       reply->deleteLater();
+}
+
+void Twitter::parseUserTimeline(QMap<QString, QVariant> *map)
+{
+
+   QMap<QString, QVariant>::const_iterator user;
+   QMap<QString, QVariant>::const_iterator text;
+   QMap<QString, QVariant>::const_iterator createDate;
+   QMap<QString, QVariant>::const_iterator userName;
+   QList<QVariant> tweets;
+   QString timeLine;
+   timeLine.append("<style>.select {font-weight: 600;} </style>");
+   QMap<QString, QVariant> mymap;
+   QMap<QString, QVariant> userMap;
+   QMap<QString, QVariant>::const_iterator iterator = map->constBegin();
+   tweets = iterator.value().toList();
+
+   for ( int i = 0 ; i<tweets.count(); i++)
+   {
+      mymap = tweets.at(i).toMap();
+      user = mymap.find("user");
+      text =  mymap.find("text");
+      createDate=  mymap.find("created_at");
+      userMap = user.value().toMap();
+      userName= userMap.find("screen_name");
+      timeLine.append("<span class=\"select\">"+createDate.value().toString()+" "+userName.value().toString() + "</span>:" + text.value().toString()+";<br>");
+
+   }
+   *userTimeLine = timeLine;
+   emit parseUserTimelineFinished();
 }
 
 

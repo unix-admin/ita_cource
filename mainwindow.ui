@@ -29,7 +29,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Соединить.......</string>
+     <string>Войти</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
@@ -69,6 +69,21 @@
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QTextEdit" name="textEdit">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>371</width>
+      <height>551</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
     </property>
    </widget>
   </widget>

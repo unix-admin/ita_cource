@@ -15,8 +15,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     ui->setupUi(this);
-    tw = new Twitter;
-    QPixmap myImg(":/data/splash.jpg");
+    ui->textEdit->setReadOnly(true);
+    ui->textEdit->setVisible(false);
+    tw = new Twitter(ui->textEdit);
+    QPixmap myImg(":/data/splash.jpg");    
     ui->label_2->setPixmap(myImg);
     QTimer *timer = new QTimer;
     timer->start(20000);
@@ -25,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->insertPermanentWidget(0, ui->netText ,0 );
     ui->pushButton->setEnabled(false);
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(buttonClicked()));    
+    connect(ui->textEdit,SIGNAL(textChanged()),this, SLOT(splashInvisible()));
     networkConnection();
 }
 
@@ -41,12 +44,8 @@ void MainWindow::showPinWindow()
 
 void MainWindow::buttonClicked()
 {
-//    autorize *setAutorisation = new autorize();
-//    setAutorisation->show();
-//    setAutorisation->getAutorisation(tw);
-     QThread thread;
-     //tw->moveToThread(thread);
-    tw->getUserTimeline();
+    //tw->getUserTimeline();
+    tw->userSerch("олег ляшко");
 
 }
 
@@ -78,6 +77,8 @@ void MainWindow::networkConnection()
     QNetworkReply *reply = manager->get(request);
     connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),SLOT(networkError()));
     connect(reply,SIGNAL(finished()),this,SLOT(networkOk()));
+
+
 }
 
 void MainWindow::networkError()
@@ -106,4 +107,14 @@ void MainWindow::networkOk()
 void MainWindow::replyFinished(QNetworkReply *)
 {
 
+}
+
+void MainWindow::updateUserTimeLine()
+{
+    ui->textEdit->setText(tw->userTimeLineText());
+}
+
+void MainWindow::splashInvisible()
+{
+    ui->label_2->setVisible(false);
 }

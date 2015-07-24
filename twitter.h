@@ -9,13 +9,14 @@
 #include <QObject>
 #include <QString>
 #include <QList>
-#include <QTextCodec>
+#include <QTextDocument>
+#include <QTextEdit>
 
 class Twitter : public QObject
 {
     Q_OBJECT
 public:
-    Twitter();
+    Twitter(QTextEdit *edit);
     QUrl getRequestToken();
     void setOauthToken(std::string response);
     QUrl getPIN();
@@ -23,6 +24,8 @@ public:
     void setPin(std::string PIN);
     void setAccessToken(std::string response);
     void getUserTimeline();
+    QString userTimeLineText();
+    void userSerch(QString userName);
 
 struct requestParamerers{
     QByteArray name;
@@ -30,6 +33,8 @@ struct requestParamerers{
 };
 public slots:
         void fin();
+        void parseUserTimelineFinished();
+        void userSearchFinished();
 
 signals: finished();
 
@@ -50,9 +55,13 @@ private : std::string key;
           OAuth::Token *request_token;
           QByteArray nonce();
           QMap<QString, QVariant> *userTimeLineMap;
+          QString *userTimeLine;
+          QTextEdit *returnText;
 
 private slots:
        void replyFinished();
+private:
+       void parseUserTimeline(QMap<QString, QVariant> *map);
 
 
 };
