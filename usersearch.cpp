@@ -8,6 +8,11 @@ UserSearch::UserSearch(QWidget *parent) :
     ui->setupUi(this);
 }
 
+UserSearch::UserSearch(Twitter *clsTwitter)
+{
+    twitter = clsTwitter;
+}
+
 UserSearch::~UserSearch()
 {
     delete ui;
@@ -15,5 +20,12 @@ UserSearch::~UserSearch()
 
 void UserSearch::userSearchButtonClick()
 {
+    twitter->userSerch(ui->textEdit->toHtml());
 
+    connect(this,SIGNAL(twitter->finished()),this,SLOT(fin()));
+}
+
+void UserSearch::fin()
+{
+    qDebug() << "Test";
 }

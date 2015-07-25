@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 {
 
-    ui->setupUi(this);
+    ui->setupUi(this);    
     ui->textEdit->setReadOnly(true);
     ui->textEdit->setVisible(false);
     tw = new Twitter(ui->textEdit);
@@ -46,14 +46,16 @@ void MainWindow::showPinWindow()
 
 void MainWindow::buttonClicked()
 {
-    //tw->getUserTimeline();
-    tw->userSerch("олег ляшко");
+    tw->getUserTimeline();
+
 
 }
 
 void MainWindow::button2Clicked()
 {
-
+    tw->userSerch("олег ляшко");
+    UserSearch *search = new UserSearch;
+    search->show();
 
 }
 

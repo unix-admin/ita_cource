@@ -12,13 +12,16 @@ class UserSearch : public QWidget
     Q_OBJECT
 
 public:
-    explicit UserSearch(QWidget *parent = 0);
+    UserSearch(QWidget *parent = 0);
+    UserSearch(Twitter *clsTwitter);
     ~UserSearch();
 
 private:
     Ui::UserSearch *ui;
+    Twitter *twitter;
 private slots:
     void userSearchButtonClick();
+    void fin();
 };
 
 #endif // USERSEARCH_H
