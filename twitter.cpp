@@ -7,8 +7,8 @@
 #include <iostream>
 #include <QByteArray>
 #include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
+//#include <QJsonObject>
+//#include <QJsonArray>
 #include <QVariant>
 #include <QMap>
 
@@ -30,6 +30,8 @@ Twitter::Twitter(QTextEdit *edit)
     userTimeLineMap = new QMap<QString, QVariant>;
     userTimeLine = new QString;
     returnText = edit;
+    userSearchResultByPage = 5;
+
 }
 
 Twitter::Twitter()
@@ -106,6 +108,11 @@ void Twitter::getUserTimeline()
 QString Twitter::userTimeLineText()
 {
     return *userTimeLine;
+}
+
+int Twitter::getuserSearchResultByPage()
+{
+    return userSearchResultByPage;
 }
 
 void Twitter::userSerch(QString userName)

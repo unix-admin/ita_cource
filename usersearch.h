@@ -3,6 +3,9 @@
 
 #include <QWidget>
 #include "twitter.h"
+#include <QTextEdit>
+#include <QList>
+#include <QLayout>
 namespace Ui {
 class UserSearch;
 }
@@ -13,15 +16,21 @@ class UserSearch : public QWidget
 
 public:
     UserSearch(QWidget *parent = 0);
-    UserSearch(Twitter *clsTwitter);
+    void getTwitterClass(Twitter *clsTwitter);
+
     ~UserSearch();
 
 private:
     Ui::UserSearch *ui;
     Twitter *twitter;
+    QList<QTextEdit*> myListBox;
+    int userSearchResultsByPage;
 private slots:
     void userSearchButtonClick();
-    void fin();
+    void userSearchFinished();
+private:
+    void prepareUserSearchResults();
+    void userSearch(QString username);
 };
 
 #endif // USERSEARCH_H
