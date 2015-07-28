@@ -25,7 +25,6 @@ private:
     bool netError;
 private slots:
     void buttonClicked();
-    void button2Clicked();
     void testbutton();
     void changeUrl();
     void networkConnection();

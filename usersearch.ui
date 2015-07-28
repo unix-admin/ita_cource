@@ -49,6 +49,7 @@
     <string>Имя пользователя</string>
    </property>
   </widget>
+<<<<<<< HEAD
   <widget class="QTextEdit" name="textEdit">
    <property name="geometry">
     <rect>
@@ -105,6 +106,8 @@
     </rect>
    </property>
   </widget>
+=======
+>>>>>>> 9d37eeddff63c5ce7b5a87980ea4ea264c6c4e67
   <widget class="QPushButton" name="pushButton_2">
    <property name="geometry">
     <rect>
@@ -130,6 +133,32 @@
    <property name="text">
     <string>Далее</string>
    </property>
+  </widget>
+  <widget class="QScrollArea" name="scrollArea">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>50</y>
+     <width>381</width>
+     <height>501</height>
+    </rect>
+   </property>
+   <property name="widgetResizable">
+    <bool>true</bool>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+   </property>
+   <widget class="QWidget" name="scrollAreaWidgetContents">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>379</width>
+      <height>499</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

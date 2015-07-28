@@ -29,7 +29,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton->setEnabled(false);
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(buttonClicked()));    
     connect(ui->textEdit,SIGNAL(textChanged()),this, SLOT(splashInvisible()));
-    connect(ui->userSearchButton,SIGNAL(clicked(bool)),SLOT(userSearch()));
+    connect(ui->searchButton,SIGNAL(clicked()),SLOT(userSearch()));
+
     networkConnection();
 }
 
@@ -51,13 +52,7 @@ void MainWindow::buttonClicked()
 
 }
 
-void MainWindow::button2Clicked()
-{
-    tw->userSerch("олег ляшко");
-    UserSearch *search = new UserSearch;
-    search->show();
 
-}
 
 void MainWindow::testbutton()
 {
@@ -125,6 +120,8 @@ void MainWindow::splashInvisible()
 
 void MainWindow::userSearch()
 {
-    UserSearch *userSearchForm = new UserSearch;
+
+   UserSearch *userSearchForm = new UserSearch();
+   userSearchForm->getTwitterClass(tw);
     userSearchForm->show();
 }

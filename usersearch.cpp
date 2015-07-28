@@ -8,9 +8,24 @@ UserSearch::UserSearch(QWidget *parent) :
     ui->setupUi(this);
 }
 
-UserSearch::UserSearch(Twitter *clsTwitter)
+void UserSearch::getTwitterClass(Twitter *clsTwitter)
 {
     twitter = clsTwitter;
+    userSearchResultsByPage = clsTwitter->getuserSearchResultByPage();
+    QVBoxLayout *searchArea = new QVBoxLayout(ui->scrollArea);
+    for (int i=0; i< userSearchResultsByPage; i++)
+    {
+        QTextEdit *textEdit =new QTextEdit();
+        textEdit->setTextColor(QColor("black"));
+        textEdit->setObjectName("textEdit"+QString::number(i));
+        textEdit->setReadOnly(true);
+        textEdit->setEnabled(false);
+        textEdit->setMinimumSize(30,90);
+        myListBox.append(textEdit);
+        searchArea->setSizeConstraint(QLayout::SetMinAndMaxSize);
+        searchArea->addWidget(textEdit);
+    }
+    ui->scrollAreaWidgetContents->setLayout(searchArea);
 }
 
 UserSearch::~UserSearch()
@@ -20,12 +35,12 @@ UserSearch::~UserSearch()
 
 void UserSearch::userSearchButtonClick()
 {
-    twitter->userSerch(ui->textEdit->toHtml());
 
-    connect(this,SIGNAL(twitter->finished()),this,SLOT(fin()));
+
+
 }
 
-void UserSearch::fin()
+void UserSearch::userSearchFinished()
 {
     qDebug() << "Test";
 }

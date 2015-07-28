@@ -26,6 +26,7 @@ public:
     void setAccessToken(std::string response);
     void getUserTimeline();
     QString userTimeLineText();
+    int getuserSearchResultByPage();
     void userSerch(QString userName);
 
 struct requestParamerers{
@@ -58,6 +59,7 @@ private : std::string key;
           QMap<QString, QVariant> *userTimeLineMap;
           QString *userTimeLine;
           QTextEdit *returnText;
+          int userSearchResultByPage; //max 20
 
 private slots:
        void replyFinished();
