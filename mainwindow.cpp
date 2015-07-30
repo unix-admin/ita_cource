@@ -9,13 +9,14 @@
 #include "setpin.h"
 #include "autorize.h"
 #include "usersearch.h"
+#include "tweetssearch.h"
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 
-{
-
+{    
     ui->setupUi(this);    
+    ui->centralWidget->setAttribute(Qt::WA_DeleteOnClose,true);
     ui->textEdit->setReadOnly(true);
     ui->textEdit->setVisible(false);
     tw = new Twitter(ui->textEdit);
@@ -31,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->textEdit,SIGNAL(textChanged()),this, SLOT(splashInvisible()));
     connect(ui->searchButton,SIGNAL(clicked()),SLOT(userSearch()));
 
+    connect(ui->centralWidget,SIGNAL(destroyed(QObject*)),this,SLOT(close()));
+    connect(ui->tweetSearchButton,SIGNAL(clicked()),SLOT(tweetSearch()));
     networkConnection();
 }
 
@@ -123,5 +126,22 @@ void MainWindow::userSearch()
 
    UserSearch *userSearchForm = new UserSearch();
    userSearchForm->getTwitterClass(tw);
-    userSearchForm->show();
+   userSearchForm->show();
+}
+
+void MainWindow::close()
+{
+    QApplication::quit();
+}
+
+void MainWindow::tweetSearch()
+{
+    TweetsSearch *searchTweet = new TweetsSearch;
+    searchTweet->prepare(tw);
+
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+ QApplication::exit();
 }

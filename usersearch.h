@@ -6,6 +6,12 @@
 #include <QTextEdit>
 #include <QList>
 #include <QLayout>
+#include <QEventLoop>
+#include <QJsonDocument>
+#include <QMap>
+#include <QVariant>
+#include <QImage>
+
 namespace Ui {
 class UserSearch;
 }
@@ -24,13 +30,24 @@ private:
     Ui::UserSearch *ui;
     Twitter *twitter;
     QList<QTextEdit*> myListBox;
+    int page;
     int userSearchResultsByPage;
 private slots:
     void userSearchButtonClick();
+    void navigateButtonClick();
     void userSearchFinished();
+    void next();
+    void previous();
+    void searchFinished();
+    void replyFinished();
+
 private:
     void prepareUserSearchResults();
     void userSearch(QString username);
+    void parseResults(QList<QVariant> results);
+    bool eventFilter(QObject *target, QEvent *event);
+    void setVisibleArea(int searchedResults);
+    void setDefaultWindow();
 };
 
 #endif // USERSEARCH_H

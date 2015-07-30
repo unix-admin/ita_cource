@@ -31,7 +31,6 @@ Twitter::Twitter(QTextEdit *edit)
     userTimeLine = new QString;
     returnText = edit;
     userSearchResultByPage = 5;
-
 }
 
 Twitter::Twitter()
@@ -91,7 +90,7 @@ void Twitter::setAccessToken(std::string response)
 void Twitter::getUserTimeline()
 {
     QNetworkAccessManager *manager = new QNetworkAccessManager;
-    connect(manager, SIGNAL(finished(QNetworkReply*)),this, SLOT(replyFinished(QNetworkReply*)));
+    //connect(manager, SIGNAL(finished(QNetworkReply*)),this, SLOT(replyFinished(QNetworkReply*)));
     QNetworkRequest request;
     std::string oauth_protected_resource = "https://api.twitter.com/1.1/statuses/home_timeline.json";
     std::string oauth_protected_resource_params = "count=100";
@@ -102,7 +101,6 @@ void Twitter::getUserTimeline()
     request.setUrl(QUrl(QString::fromStdString("https://api.twitter.com/1.1/statuses/home_timeline.json?"+oAuthQueryString)));
     QNetworkReply* reply= manager->get(request);
     connect( reply, SIGNAL(finished()),this, SLOT(replyFinished()));
-    qDebug() << oauth_protected_resource.c_str()<< "?" << oAuthQueryString.c_str();
 }
 
 QString Twitter::userTimeLineText()
@@ -117,19 +115,19 @@ int Twitter::getuserSearchResultByPage()
 
 void Twitter::userSerch(QString userName)
 {
-    QNetworkAccessManager *manager = new QNetworkAccessManager;
-    connect(manager, SIGNAL(finished(QNetworkReply*)),this, SLOT(replyFinished(QNetworkReply*)));
-    QNetworkRequest request;
-    std::string oauth_protected_resource = "https://api.twitter.com/1.1/users/search.json";
-    std::string oauth_protected_resource_params =  "q="+QUrl::toPercentEncoding(userName).toStdString()+"&count=5";
+
+}
+
+QUrl Twitter::generateQueryString(std::string url, std::string parameters)
+{
     OAuth::Consumer consumer(key, secret);
     OAuth::Token token(accessTokenKey, accessTokenSecret);
-    OAuth::Client oauth1(&consumer, &token);
-    std::string oAuthQueryString = oauth1.getURLQueryString(OAuth::Http::Get, oauth_protected_resource + "?" + oauth_protected_resource_params);
-    request.setUrl(QUrl(QString::fromStdString("https://api.twitter.com/1.1/users/search.json?"+oAuthQueryString)));
-    QNetworkReply* reply= manager->get(request);
-    connect( reply, SIGNAL(finished()),this, SLOT(userSearchFinished()));
+    OAuth::Client oauthClient(&consumer, &token);
+    std::string oAuthQueryString = oauthClient.getURLQueryString(OAuth::Http::Get, url + "?" + parameters);
+    return QUrl(QString::fromStdString(url+"?"+oAuthQueryString));
 }
+
+
 
 
 void Twitter::fin()
@@ -146,17 +144,7 @@ void Twitter::parseUserTimelineFinished()
 
 void Twitter::userSearchFinished()
 {
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-    if (reply->error() == QNetworkReply::NoError)
-      {
-        QByteArray qb = "{\"fuckingJsonFromTwitter\": ";
-        qb.append(reply->readAll());
-        qb.append("}");
-        *userTimeLineMap = QJsonDocument::fromJson(qb).toVariant().toMap();
-        parseUserTimeline(userTimeLineMap);
-      }
-    else qDebug()<<reply->errorString();
-    reply->deleteLater();
+
 }
 
 QByteArray Twitter::nonce()

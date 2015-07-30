@@ -11,6 +11,7 @@
 #include <QList>
 #include <QTextDocument>
 #include <QTextEdit>
+#include <QEventLoop>
 
 class Twitter : public QObject
 {
@@ -28,6 +29,7 @@ public:
     QString userTimeLineText();
     int getuserSearchResultByPage();
     void userSerch(QString userName);
+    QUrl generateQueryString(std::string url, std::string parameters);
 
 struct requestParamerers{
     QByteArray name;

@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>597</height>
+    <height>590</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Поиск</string>
   </property>
   <widget class="QLineEdit" name="lineEdit">
    <property name="geometry">
@@ -49,65 +49,6 @@
     <string>Имя пользователя</string>
    </property>
   </widget>
-<<<<<<< HEAD
-  <widget class="QTextEdit" name="textEdit">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>60</y>
-     <width>361</width>
-     <height>91</height>
-    </rect>
-   </property>
-   <property name="mouseTracking">
-    <bool>true</bool>
-   </property>
-   <property name="focusPolicy">
-    <enum>Qt::ClickFocus</enum>
-   </property>
-  </widget>
-  <widget class="QTextEdit" name="textEdit_2">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>160</y>
-     <width>361</width>
-     <height>91</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QTextEdit" name="textEdit_3">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>260</y>
-     <width>361</width>
-     <height>91</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QTextEdit" name="textEdit_4">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>360</y>
-     <width>361</width>
-     <height>91</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QTextEdit" name="textEdit_5">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>460</y>
-     <width>361</width>
-     <height>91</height>
-    </rect>
-   </property>
-  </widget>
-=======
->>>>>>> 9d37eeddff63c5ce7b5a87980ea4ea264c6c4e67
   <widget class="QPushButton" name="pushButton_2">
    <property name="geometry">
     <rect>
@@ -139,23 +80,23 @@
     <rect>
      <x>10</x>
      <y>50</y>
-     <width>381</width>
-     <height>501</height>
+     <width>380</width>
+     <height>500</height>
     </rect>
+   </property>
+   <property name="sizeAdjustPolicy">
+    <enum>QAbstractScrollArea::AdjustIgnored</enum>
    </property>
    <property name="widgetResizable">
     <bool>true</bool>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
    </property>
    <widget class="QWidget" name="scrollAreaWidgetContents">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>379</width>
-      <height>499</height>
+      <width>378</width>
+      <height>498</height>
      </rect>
     </property>
    </widget>

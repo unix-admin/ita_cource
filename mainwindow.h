@@ -34,9 +34,11 @@ private slots:
     void updateUserTimeLine();
     void splashInvisible();
     void userSearch();
+    void close();
+    void tweetSearch();
 
 private:
-
+void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 };
 
