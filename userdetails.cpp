@@ -3,6 +3,7 @@
 #include <QMovie>
 #include <QLayout>
 #include <QLabel>
+
 UserDetails::UserDetails(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::UserDetails)

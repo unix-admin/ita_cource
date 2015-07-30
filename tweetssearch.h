@@ -8,6 +8,7 @@
 //#include <QMap>
 //#include <QJsonDocument>
 #include "parser.h"
+#include "requests.h"
 namespace Ui {
 class TweetsSearch;
 }

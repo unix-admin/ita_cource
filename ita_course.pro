@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     usersearch.cpp \
     userdetails.cpp \
     tweetssearch.cpp \
-    parser.cpp
+    parser.cpp \
+    requests.cpp
 
 HEADERS  += mainwindow.h \
     base64.h \
@@ -39,7 +40,8 @@ HEADERS  += mainwindow.h \
     usersearch.h \
     userdetails.h \
     tweetssearch.h \
-    parser.h
+    parser.h \
+    requests.h
 
 FORMS    += mainwindow.ui \
     setpin.ui \

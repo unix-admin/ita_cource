@@ -13,6 +13,7 @@
 #include <QTextEdit>
 #include <QEventLoop>
 
+
 class Twitter : public QObject
 {
     Q_OBJECT
