@@ -1,15 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QWebFrame>
-#include <QFile>
-#include <QStringList>
-#include <QTimer>
-#include <QThread>
 
-#include "setpin.h"
-#include "autorize.h"
-#include "usersearch.h"
-#include "tweetssearch.h"
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -31,10 +23,17 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(buttonClicked()));    
     connect(ui->textEdit,SIGNAL(textChanged()),this, SLOT(splashInvisible()));
     connect(ui->searchButton,SIGNAL(clicked()),SLOT(userSearch()));
-
     connect(ui->centralWidget,SIGNAL(destroyed(QObject*)),this,SLOT(close()));
-    connect(ui->tweetSearchButton,SIGNAL(clicked()),SLOT(tweetSearch()));
+    connect(ui->tweetSearchButton,SIGNAL(clicked()),SLOT(tweetSearch()));   
     networkConnection();
+    DataBase *db = new DataBase;
+    ui->comboBox->insertItems(0,db->getUsers());
+    delete db;
+    ui->searchButton->setVisible(false);
+    ui->tweetSearchButton->setVisible(false);
+    ui->photo->setVisible(false);
+    ui->verticalLayoutWidget->setVisible(false);
+
 }
 
 MainWindow::~MainWindow()
@@ -50,7 +49,21 @@ void MainWindow::showPinWindow()
 
 void MainWindow::buttonClicked()
 {
+    if (ui->comboBox->currentText() == "Новый пользователь")
+    {
+        autorize *newUser = new autorize;
+        newUser->getAutorisation(tw);
+    }
+    else
+    {
     tw->getUserTimeline();
+    ui->comboBox->setHidden(true);
+    ui->pushButton->setVisible(false);
+    ui->searchButton->setVisible(true);
+    ui->tweetSearchButton->setVisible(true);
+    ui->photo->setVisible(true);
+    ui->verticalLayoutWidget->setVisible(true);
+    }
 
 
 }

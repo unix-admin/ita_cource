@@ -7,6 +7,22 @@ Parser::Parser()
 
 }
 
+QStringList Parser::parseSearchRequest(QByteArray *data)
+{
+    QStringList result;
+    QMap<QString,QVariant> dataToParse;
+    dataToParse = QJsonDocument::fromJson(*data).toVariant().toMap();
+    QMap<QString, QVariant> metadata = dataToParse.begin().value().toMap();
+    result.append(metadata.find("next_results").value().toString());
+    result.append(metadata.find("refresh_url").value().toString());
+    QString tweets;
+    tweets = parseTweets(data);
+    result.append(tweets);
+    result.append(minTweetID);
+    result.append(maxTweetID);
+    return result;
+}
+
 QString Parser::parseTweets(QByteArray *data)
 {
      QMap<QString,QVariant> dataToParse;
@@ -31,6 +47,14 @@ QString Parser::parseTweets(QByteArray *data)
      for ( int i = 0 ; i<tweetsList.count(); i++)
      {
         mymap = tweetsList.at(i).toMap();
+        if (i==0)
+        {
+            maxTweetID =  mymap.find("id_str").value().toString();
+        }
+        if (i==tweetsList.count()-1)
+        {
+            minTweetID =  mymap.find("id_str").value().toString();
+        }
         user = mymap.find("user");
         text =  mymap.find("text");
         createDate=  mymap.find("created_at");
@@ -41,16 +65,32 @@ QString Parser::parseTweets(QByteArray *data)
      return tweets;
 }
 
-std::string Parser::parseSearchMetadata(QByteArray *data)
+void Parser::parseSearchMetadata(QByteArray *data, QStringList *listData)
 {
+
+    listData->clear();
     QMap<QString,QVariant> dataToParse;
     dataToParse = QJsonDocument::fromJson(*data).toVariant().toMap();
-    QMap<QString, QVariant> metadata = dataToParse.begin().value().toMap();
-    std::string nextResults;
-    nextResults = metadata.find("next_results").value().toString().toStdString();
-    qDebug()<<metadata.find("next_results").value().toString();
-    qDebug()<<metadata.find("refresh_url").value().toString();
-    return nextResults;
+    QMap<QString, QVariant> metadata = dataToParse.begin().value().toMap();    
+    listData->append(metadata.find("next_results").value().toString());
+    listData->append(metadata.find("refresh_url").value().toString());
+}
+
+void Parser::quit()
+{
+
+
+    qDebug() << "quit";
+}
+
+QString Parser::getmaxTweetID(QList<QVariant> tweetsList)
+{
+
+}
+
+QString Parser::getminTweetID(QList<QVariant> tweetsList)
+{
+
 }
 
 

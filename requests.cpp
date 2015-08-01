@@ -5,7 +5,7 @@ Requests::Requests()
 
 }
 
-QByteArray Requests::getRequest(requestType type, std::string parameters, Twitter *clsTwitter)
+QByteArray Requests::getRequest(requestType type, std::string parameters, std::string parameters2, Twitter *clsTwitter)
 {
     QEventLoop loop;
     QNetworkAccessManager *manager = new QNetworkAccessManager;
@@ -13,12 +13,15 @@ QByteArray Requests::getRequest(requestType type, std::string parameters, Twitte
     QNetworkRequest request;
     switch (type) {
         case GET_HOME_TIMELINE:
-                break;
+        break;
         case GET_USER_TIMELINE:
-            break;
+        break;
         case TWEETS_SEARCH:
-            request.setUrl(clsTwitter->generateQueryString("https://api.twitter.com/1.1/search/tweets.json","q=%23"+QUrl::toPercentEncoding(QString::fromStdString(parameters)).toStdString()+"&count=100"));
-            break;
+            request.setUrl(clsTwitter->generateQueryString("https://api.twitter.com/1.1/search/tweets.json","q=%23"+QUrl::toPercentEncoding(QString::fromStdString(parameters)).toStdString()+parameters2));
+        break;
+        case TWEETS_SEARCH_NAVIGATE:
+            request.setUrl(clsTwitter->generateQueryString("https://api.twitter.com/1.1/search/tweets.json",parameters+parameters2));
+        break;
     }
     QNetworkReply* reply= manager->get(request);
     connect(reply, SIGNAL(finished()),this, SLOT(replyFinished()));

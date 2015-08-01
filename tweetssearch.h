@@ -9,6 +9,11 @@
 //#include <QJsonDocument>
 #include "parser.h"
 #include "requests.h"
+enum loadingImage{
+     ON=0
+    ,OFF
+};
+
 namespace Ui {
 class TweetsSearch;
 }
@@ -28,13 +33,16 @@ private:
     QMovie* movie;
     Parser *clsParser;
     std::string nextResultsParameters;
+    QStringList *metadata;
 private slots:
     void startSearch();
     void tweetSearchFinished();
     void replyFinished();
     void nextResults();
+    void previousResults();
 private:
     void parseSearchedTweets(QMap<QString,QVariant> searchedTweets);
+    void showLoadingImage(loadingImage signal);
 };
 
 #endif // TWEETSSEARCH_H

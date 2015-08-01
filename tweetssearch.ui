@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>#Поиск</string>
   </property>
   <widget class="QLineEdit" name="searchField">
    <property name="geometry">
@@ -59,30 +59,30 @@
     <string>TextLabel</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="previous">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>550</y>
-     <width>75</width>
+     <width>131</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>PushButton</string>
+    <string>Предыдущая страница</string>
    </property>
   </widget>
   <widget class="QPushButton" name="next">
    <property name="geometry">
     <rect>
-     <x>260</x>
+     <x>250</x>
      <y>550</y>
-     <width>75</width>
+     <width>131</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>PushButton</string>
+    <string>Следующая страница</string>
    </property>
   </widget>
  </widget>

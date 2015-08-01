@@ -139,7 +139,8 @@ void Twitter::parseUserTimelineFinished()
 {
 
     returnText->setHtml(*userTimeLine);
-    returnText->setVisible(true);
+    returnText->setVisible(true);    
+
 }
 
 void Twitter::userSearchFinished()

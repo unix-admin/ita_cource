@@ -15,6 +15,8 @@ enum requestType{
      GET_HOME_TIMELINE=0
     ,GET_USER_TIMELINE
     ,TWEETS_SEARCH
+    ,TWEETS_SEARCH_NAVIGATE
+
 };
 
 class Requests :public QObject
@@ -25,7 +27,7 @@ class Requests :public QObject
 
 public:
     Requests();
-    QByteArray getRequest(requestType type, std::string parameters, Twitter *clsTwitter);
+    QByteArray getRequest(requestType type, std::string parameters, std::string parameters2, Twitter *clsTwitter);
 
 private:
     QByteArray requestResult;

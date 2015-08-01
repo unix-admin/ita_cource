@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network webkitwidgets
+QT       += core gui network webkitwidgets sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -26,7 +26,8 @@ SOURCES += main.cpp\
     userdetails.cpp \
     tweetssearch.cpp \
     parser.cpp \
-    requests.cpp
+    requests.cpp \
+    database.cpp
 
 HEADERS  += mainwindow.h \
     base64.h \
@@ -41,7 +42,8 @@ HEADERS  += mainwindow.h \
     userdetails.h \
     tweetssearch.h \
     parser.h \
-    requests.h
+    requests.h \
+    database.h
 
 FORMS    += mainwindow.ui \
     setpin.ui \

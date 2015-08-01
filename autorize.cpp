@@ -7,7 +7,7 @@ autorize::autorize(QWidget *parent) :
     ui(new Ui::autorize)
 {
     ui->setupUi(this);
-    connect(ui->webView,SIGNAL(loadFinished(bool)), this, SLOT(changeUrl()));
+    connect(ui->webView,SIGNAL(loadFinished(bool)), this, SLOT(changeUrl()));    
 }
 
 autorize::~autorize()
@@ -17,11 +17,14 @@ autorize::~autorize()
 
 void autorize::getAutorisation(Twitter *pTwitter)
 {
+
+
     clsTwitter = pTwitter;
     QUrl url(clsTwitter->getRequestToken());
     urlChange(url);
     qDebug() << ui->webView->url().toString();
-    url = "about:blank";
+    show();
+    url = "about:blank";    
     clsTwitter->setOauthToken(ui->webView->page()->currentFrame()->toPlainText().toStdString());
     url = clsTwitter->getPIN();
     ui->webView->setUrl(url);
@@ -48,9 +51,17 @@ void autorize::showPinWindow()
     connect(ui->webView,SIGNAL(loadFinished(bool)), &loop, SLOT(quit()));
     loop.exec();
     clsTwitter->setAccessToken(ui->webView->page()->currentFrame()->toPlainText().toStdString());
+    delete pin;
+    QWebSettings::clearMemoryCaches();
+    this->deleteLater();
+    close();
+
     }
     else
     {
+        QWebSettings::clearMemoryCaches();
+        delete pin;
+        this->deleteLater();
         close();
     }
 }

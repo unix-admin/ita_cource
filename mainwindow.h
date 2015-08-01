@@ -1,9 +1,20 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
-#include <QMainWindow>
-#include <twitter.h>
 #include <QLabel>
+#include <QWebFrame>
+#include <QFile>
+#include <QStringList>
+#include <QTimer>
+#include <QThread>
+#include <QMainWindow>
+
+#include "twitter.h"
+#include "setpin.h"
+#include "autorize.h"
+#include "usersearch.h"
+#include "tweetssearch.h"
+#include "database.h"
+
 namespace Ui {
 class MainWindow;
 }

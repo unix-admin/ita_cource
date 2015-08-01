@@ -23,6 +23,7 @@ void TweetsSearch::prepare(Twitter *clsTwitter)
     ui->searchedResults->setReadOnly(true);
     connect(ui->searchButton,SIGNAL(clicked(bool)),this,SLOT(startSearch()));
     connect(ui->next,SIGNAL(clicked(bool)),this,SLOT(nextResults()));
+    connect(ui->previous,SIGNAL(clicked(bool)),this,SLOT(previousResults()));
     movie = new QMovie(":/data/images/loading.gif");    
     ui->loadProgress->setMovie(movie);
     nextResultsParameters = "";
@@ -31,15 +32,21 @@ void TweetsSearch::prepare(Twitter *clsTwitter)
 
 void TweetsSearch::startSearch()
 {
+      metadata = new QStringList;
       ui->searchedResults->clear();
-      Requests *twitterRequest = new Requests;
-      ui->loadProgress->setVisible(true);
-      movie->start();
+      showLoadingImage(ON);
+      Requests *twitterRequest = new Requests;      
       QByteArray request;
-      request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),twitter);
-      movie->stop();
-      ui->loadProgress->setVisible(false);
-      ui->searchedResults->setHtml(clsParser->parseTweets(&request));
+      QStringList results;
+      request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count=100",twitter);
+      results = clsParser->parseSearchRequest(&request);
+      metadata->append(results.at(0));
+      metadata->append(results.at(1));
+      metadata->append(results.at(2));
+      metadata->append(results.at(3));
+      metadata->append(results.at(4));
+      showLoadingImage(OFF);
+      ui->searchedResults->setHtml(results.at(2));
       delete twitterRequest;
 
 }
@@ -55,13 +62,59 @@ void TweetsSearch::replyFinished()
 
 void TweetsSearch::nextResults()
 {
-    QNetworkAccessManager *manager = new QNetworkAccessManager;
-    connect(manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(replyFinished()));
     ui->searchedResults->clear();
-    QNetworkRequest request;
-    request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/search/tweets.json",nextResultsParameters));
-    QNetworkReply* reply= manager->get(request);
-    ui->loadProgress->setVisible(true);
-    movie->start();
-    connect(reply, SIGNAL(finished()),this, SLOT(tweetSearchFinished()));
+    showLoadingImage(ON);
+    Requests *twitterRequest = new Requests;
+    QByteArray request;
+    QStringList results;
+    request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count=100&max_id="+metadata->at(3).toStdString(),twitter);
+    qDebug() << metadata->at(0);
+    delete metadata;
+    metadata = new QStringList;
+    results = clsParser->parseSearchRequest(&request);
+    metadata->append(results.at(0));
+    metadata->append(results.at(1));
+    metadata->append(results.at(2));
+    metadata->append(results.at(3));
+    metadata->append(results.at(4));
+    showLoadingImage(OFF);
+    ui->searchedResults->setHtml(results.at(2));
+    delete twitterRequest;
+
+}
+
+void TweetsSearch::previousResults()
+{
+    ui->searchedResults->clear();
+    showLoadingImage(ON);
+    Requests *twitterRequest = new Requests;
+    QByteArray request;
+    QStringList results;
+    request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count=100&since_id="+metadata->at(3).toStdString(),twitter);
+    qDebug() << metadata->at(0);
+    delete metadata;
+    metadata = new QStringList;
+    results = clsParser->parseSearchRequest(&request);
+    metadata->append(results.at(0));
+    metadata->append(results.at(1));
+    metadata->append(results.at(2));
+    metadata->append(results.at(3));
+    metadata->append(results.at(4));
+    showLoadingImage(OFF);
+    ui->searchedResults->setHtml(results.at(2));
+    delete twitterRequest;
+}
+
+void TweetsSearch::showLoadingImage(loadingImage signal)
+{
+    switch (signal) {
+    case ON:
+        ui->loadProgress->setVisible(true);
+        movie->start();
+        break;
+    case OFF:
+        movie->stop();
+        ui->loadProgress->setVisible(false);
+        break;
+    }
 }
