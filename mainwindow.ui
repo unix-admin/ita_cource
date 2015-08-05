@@ -17,24 +17,6 @@
    <string>Клиент Twitter</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>600</y>
-      <width>371</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>12</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Войти</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
@@ -95,32 +77,6 @@
      <enum>Qt::ClickFocus</enum>
     </property>
    </widget>
-   <widget class="QPushButton" name="searchButton">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>550</y>
-      <width>121</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Поиск пользователей</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="tweetSearchButton">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>590</y>
-      <width>121</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Поиск твитов</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="photo">
     <property name="geometry">
      <rect>
@@ -167,15 +123,71 @@
      </item>
     </layout>
    </widget>
-   <widget class="QComboBox" name="comboBox">
+   <widget class="QWidget" name="verticalLayoutWidget_3">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>570</y>
-      <width>351</width>
-      <height>22</height>
+      <x>10</x>
+      <y>540</y>
+      <width>371</width>
+      <height>121</height>
      </rect>
     </property>
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetMinAndMaxSize</enum>
+     </property>
+     <item>
+      <widget class="QComboBox" name="comboBox"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Войти</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="formLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>550</y>
+      <width>381</width>
+      <height>113</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="rowWrapPolicy">
+      <enum>QFormLayout::WrapAllRows</enum>
+     </property>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="searchButton">
+       <property name="text">
+        <string>Поиск пользователей</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QPushButton" name="tweetSearchButton">
+       <property name="text">
+        <string>Поиск твитов</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="settingsButton">
+       <property name="text">
+        <string>Настройки</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">

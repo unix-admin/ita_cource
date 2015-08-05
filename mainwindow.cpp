@@ -25,14 +25,15 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->searchButton,SIGNAL(clicked()),SLOT(userSearch()));
     connect(ui->centralWidget,SIGNAL(destroyed(QObject*)),this,SLOT(close()));
     connect(ui->tweetSearchButton,SIGNAL(clicked()),SLOT(tweetSearch()));   
+    connect(ui->settingsButton,SIGNAL(clicked(bool)),this, SLOT(settingsShow()));
+    connect(tw,SIGNAL(finished()),this, SLOT(userShow()));
     networkConnection();
-    DataBase *db = new DataBase;
+    db = DataBase::getInstance();
     ui->comboBox->insertItems(0,db->getUsers());
-    delete db;
-    ui->searchButton->setVisible(false);
-    ui->tweetSearchButton->setVisible(false);
+    ui->verticalLayoutWidget_3->setVisible(true);
+    ui->formLayoutWidget->setVisible(false);
     ui->photo->setVisible(false);
-    ui->verticalLayoutWidget->setVisible(false);
+    ui->verticalLayoutWidget->setVisible(false);    
 
 }
 
@@ -56,19 +57,9 @@ void MainWindow::buttonClicked()
     }
     else
     {
-    tw->getUserTimeline();
-    ui->comboBox->setHidden(true);
-    ui->pushButton->setVisible(false);
-    ui->searchButton->setVisible(true);
-    ui->tweetSearchButton->setVisible(true);
-    ui->photo->setVisible(true);
-    ui->verticalLayoutWidget->setVisible(true);
+    tw->setUserData(db->getUserParameters(ui->comboBox->currentText()));
     }
-
-
 }
-
-
 
 void MainWindow::testbutton()
 {
@@ -92,8 +83,6 @@ void MainWindow::networkConnection()
     QNetworkReply *reply = manager->get(request);
     connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),SLOT(networkError()));
     connect(reply,SIGNAL(finished()),this,SLOT(networkOk()));
-
-
 }
 
 void MainWindow::networkError()
@@ -154,7 +143,30 @@ void MainWindow::tweetSearch()
 
 }
 
-void MainWindow::closeEvent(QCloseEvent *event)
+void MainWindow::settingsShow()
 {
+    Settings *settingsWindow = new Settings;
+    settingsWindow->exec();
+    //connect(settingsWindow,SIGNAL(closed()),settingsWindow,SLOT(deleteLater()));
+    settingsWindow->deleteLater();
+
+}
+
+void MainWindow::userShow()
+{
+    Requests Request = new Requests;
+
+    tw->getUserTimeline();
+
+    ui->verticalLayoutWidget_3->setVisible(false);
+    ui->formLayoutWidget->setVisible(true);
+    ui->tweetSearchButton->setVisible(true);
+    ui->photo->setVisible(true);
+    ui->verticalLayoutWidget->setVisible(true);
+}
+
+void MainWindow::closeEvent(QCloseEvent *)
+{
+
  QApplication::exit();
 }

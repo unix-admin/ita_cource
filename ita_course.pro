@@ -27,7 +27,8 @@ SOURCES += main.cpp\
     tweetssearch.cpp \
     parser.cpp \
     requests.cpp \
-    database.cpp
+    database.cpp \
+    settings.cpp
 
 HEADERS  += mainwindow.h \
     base64.h \
@@ -43,14 +44,16 @@ HEADERS  += mainwindow.h \
     tweetssearch.h \
     parser.h \
     requests.h \
-    database.h
+    database.h \
+    settings.h
 
 FORMS    += mainwindow.ui \
     setpin.ui \
     autorize.ui \
     usersearch.ui \
     userdetails.ui \
-    tweetssearch.ui
+    tweetssearch.ui \
+    settings.ui
 
 RESOURCES += \
     resources.qrc

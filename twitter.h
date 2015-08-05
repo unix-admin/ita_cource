@@ -12,7 +12,7 @@
 #include <QTextDocument>
 #include <QTextEdit>
 #include <QEventLoop>
-
+#include "database.h"
 
 class Twitter : public QObject
 {
@@ -31,6 +31,7 @@ public:
     int getuserSearchResultByPage();
     void userSerch(QString userName);
     QUrl generateQueryString(std::string url, std::string parameters);
+    void setUserData(QStringList userData);
 
 struct requestParamerers{
     QByteArray name;
@@ -51,10 +52,10 @@ private : std::string key;
           std::string access_token_url;
           std::string oauth_token;
           std::string oauth_token_secret;
-          std::string accessTokenKey;
-          std::string accessTokenSecret;
-          std::string displayName;
+
+
           std::string oauthSignature;
+
           OAuth::Client *oauthClient;
           OAuth::Consumer *oauthConsumer;
           OAuth::Token *request_token;
@@ -62,7 +63,24 @@ private : std::string key;
           QMap<QString, QVariant> *userTimeLineMap;
           QString *userTimeLine;
           QTextEdit *returnText;
-          int userSearchResultByPage; //max 20
+          //User Settings
+          QString userID;
+          QString userName;
+          QString twitterUserID;
+          std::string accessTokenKey;
+          std::string accessTokenSecret;
+          QString displayName;
+          QString description;
+          QByteArray image;
+          QString imageUrl;
+          QString timelineTweetsByPage;
+          QString searchTweetsByPage;
+          QString searchUsersByPage;
+          QString searchTweetsToDatabase;
+          QString refreshTime;
+
+          int userSearchResultByPage;
+
 
 private slots:
        void replyFinished();

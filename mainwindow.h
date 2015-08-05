@@ -14,7 +14,7 @@
 #include "usersearch.h"
 #include "tweetssearch.h"
 #include "database.h"
-
+#include "settings.h"
 namespace Ui {
 class MainWindow;
 }
@@ -34,6 +34,7 @@ private:
     void urlChange(QUrl url);
     void showPinWindow();
     bool netError;
+    DataBase *db;
 private slots:
     void buttonClicked();
     void testbutton();
@@ -47,9 +48,11 @@ private slots:
     void userSearch();
     void close();
     void tweetSearch();
+    void settingsShow();
+    void userShow();
 
 private:
-void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;
 
 };
 

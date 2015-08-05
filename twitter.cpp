@@ -7,8 +7,6 @@
 #include <iostream>
 #include <QByteArray>
 #include <QJsonDocument>
-//#include <QJsonObject>
-//#include <QJsonArray>
 #include <QVariant>
 #include <QMap>
 
@@ -23,10 +21,6 @@ Twitter::Twitter(QTextEdit *edit)
     oauthSignature = "";
     oauthConsumer = new OAuth::Consumer(key,secret);
     oauthClient = new OAuth::Client(oauthConsumer);
-    request_token = new OAuth::Token;
-    accessTokenKey = "3370490014-9Mxv22sir4OgEGYgLkVMuux9u6u7W6aRqPzFBXg";
-    accessTokenSecret="mGIf3QINhI2ZaIAjy9u1klq2pnhcmrPajapMQ3P89Bx7U";
-    displayName = "";
     userTimeLineMap = new QMap<QString, QVariant>;
     userTimeLine = new QString;
     returnText = edit;
@@ -84,7 +78,7 @@ void Twitter::setAccessToken(std::string response)
      accessTokenSecret= access_token.secret();
      std::pair<OAuth::KeyValuePairs::iterator, OAuth::KeyValuePairs::iterator> screen_name_its = access_token_resp_data.equal_range("screen_name");
          for(OAuth::KeyValuePairs::iterator it = screen_name_its.first; it != screen_name_its.second; it++)
-            displayName = it->second;
+            displayName = QString::fromStdString(it->second);
 }
 
 void Twitter::getUserTimeline()
@@ -127,7 +121,25 @@ QUrl Twitter::generateQueryString(std::string url, std::string parameters)
     return QUrl(QString::fromStdString(url+"?"+oAuthQueryString));
 }
 
+void Twitter::setUserData(QStringList userData)
+{
+     userID = userData.value(0);
+     userName = userData.value(1);
+     twitterUserID = userData.value(2);
+     accessTokenKey = userData.value(3).toStdString();
+     accessTokenSecret = userData.value(4).toStdString();
+     displayName = userData.value(5);
+     description = userData.value(6);
+     image = QByteArray::fromStdString(userData.value(7).toStdString());
+     imageUrl = userData.value(8);
+     timelineTweetsByPage = userData.value(9);
+     searchTweetsByPage = userData.value(10);
+     searchUsersByPage = userData.value(11);
+     searchTweetsToDatabase = userData.value(12);
+     refreshTime = userData.value(13);
+     emit finished();
 
+}
 
 
 void Twitter::fin()
