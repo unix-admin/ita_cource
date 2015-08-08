@@ -15,6 +15,7 @@
 #include "tweetssearch.h"
 #include "database.h"
 #include "settings.h"
+#include "parser.h"
 namespace Ui {
 class MainWindow;
 }
@@ -31,14 +32,14 @@ public:
 private:
     Ui::MainWindow *ui;
     Twitter *tw;
-    void urlChange(QUrl url);
-    void showPinWindow();
+
+
     bool netError;
     DataBase *db;
+    DataBase::userData data;
 private slots:
     void buttonClicked();
-    void testbutton();
-    void changeUrl();
+
     void networkConnection();
     void networkError();
     void networkOk();
@@ -50,6 +51,7 @@ private slots:
     void tweetSearch();
     void settingsShow();
     void userShow();
+    void getNewUserData();
 
 private:
 void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;

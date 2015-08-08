@@ -5,6 +5,12 @@
 #include "twitter.h"
 #include <QUrl>
 #include <QWebFrame>
+#include <QUrlQuery>
+#include <QMessageBox>
+#include "setpin.h"
+#include "database.h"
+#include "database.h"
+
 namespace Ui {
 class autorize;
 }

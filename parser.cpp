@@ -60,7 +60,7 @@ QString Parser::parseTweets(QByteArray *data)
         createDate=  mymap.find("created_at");
         userMap = user.value().toMap();
         userName= userMap.find("screen_name");
-        tweets.append("<span class=\"select\">"+createDate.value().toString()+" "+userName.value().toString() + "</span>:" + text.value().toString()+";<br>");
+        tweets.append("<span class=\"select\">"+dateFormat(createDate.value())+" "+userName.value().toString() + "</span>:" + text.value().toString()+";<br>");
      }
      return tweets;
 }
@@ -76,6 +76,24 @@ void Parser::parseSearchMetadata(QByteArray *data, QStringList *listData)
     listData->append(metadata.find("refresh_url").value().toString());
 }
 
+QStringList Parser::parseUserInfo(QByteArray *data)
+{
+    QStringList result;
+    QMap<QString,QVariant> userInfo;
+    userInfo = QJsonDocument::fromJson(*data).toVariant().toMap();
+    result.append(userInfo.find("id").value().toString());
+    result.append(userInfo.find("name").value().toString());
+    result.append(userInfo.find("screen_name").value().toString());
+    result.append(userInfo.find("description").value().toString());
+    result.append(userInfo.find("statuses_count").value().toString());
+    result.append(userInfo.find("friends_count").value().toString());
+    result.append(userInfo.find("followers_count").value().toString());
+    result.append(userInfo.find("profile_image_url").value().toString().replace("_normal","_reasonably_small"));
+    Requests *imageDownload = new Requests;
+    result.append(QString::fromStdString(imageDownload->getImage(QUrl(result.value(7))).toStdString()));
+    return result;
+}
+
 void Parser::quit()
 {
 
@@ -83,15 +101,36 @@ void Parser::quit()
     qDebug() << "quit";
 }
 
-QString Parser::getmaxTweetID(QList<QVariant> tweetsList)
+QString Parser::dateFormat(QVariant value)
 {
+    QString result;
+    result = value.toString();
+    result.replace("+0000","");
+    //Replace week
+    result.replace("Mon","Пн");
+    result.replace("Tue","Вт");
+    result.replace("Wed","Ср");
+    result.replace("Thu","Чт");
+    result.replace("Fri","Пт");
+    result.replace("Sat","Сб");
+    result.replace("Sun","Вс");
+    //Replace month
+    result.replace("Jan","Янв");
+    result.replace("Feb","Фев");
+    result.replace("Mar","Мар");
+    result.replace("Apr","Апр");
+    result.replace("May","Май");
+    result.replace("Jun","Июн");
+    result.replace("Jul","Июл");
+    result.replace("Aug","Авг");
+    result.replace("Sep","Сен");
+    result.replace("Oct","Окт");
+    result.replace("Nov","Ноя");
+    result.replace("Dec","Дек");
 
+
+
+    return result;
 }
-
-QString Parser::getminTweetID(QList<QVariant> tweetsList)
-{
-
-}
-
 
 

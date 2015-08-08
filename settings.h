@@ -15,11 +15,11 @@ class Settings : public QDialog
 public:
     explicit Settings(QWidget *parent = 0);
     ~Settings();
-    void setUserID(int ID);
+    void setUserID(QString ID);
 
 private:
     Ui::Settings *ui;
-    int userID;
+    QString userID;
     DataBase *settingsDB;
 private:
     void getSettings();

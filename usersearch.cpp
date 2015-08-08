@@ -22,7 +22,7 @@ UserSearch::UserSearch(QWidget *parent) :
 void UserSearch::getTwitterClass(Twitter *clsTwitter)
 {
     twitter = clsTwitter;
-    userSearchResultsByPage = clsTwitter->getuserSearchResultByPage();
+    userSearchResultsByPage = clsTwitter->getUserSettings()->searchUsersByPage.toInt();
     QVBoxLayout *searchArea = new QVBoxLayout(ui->scrollArea);
     for (int i=0; i< userSearchResultsByPage; i++)
     {
@@ -53,7 +53,7 @@ void UserSearch::userSearchButtonClick()
     QNetworkAccessManager *manager = new QNetworkAccessManager;
     connect(manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(replyFinished()));
     QNetworkRequest request;
-    request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/users/search.json","q="+QUrl::toPercentEncoding(ui->lineEdit->text()).toStdString()+"&count=5&page=1"));
+    request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/users/search.json","q="+QUrl::toPercentEncoding(ui->lineEdit->text()).toStdString()+"&count="+twitter->getUserSettings()->searchUsersByPage.toStdString()+"&page=1"));
     QNetworkReply* reply= manager->get(request);
     connect(reply, SIGNAL(finished()),this, SLOT(userSearchFinished()));
 }
@@ -63,7 +63,7 @@ void UserSearch::navigateButtonClick()
     QNetworkAccessManager *manager = new QNetworkAccessManager;
     connect(manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(replyFinished()));
     QNetworkRequest request;
-    request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/users/search.json","q="+QUrl::toPercentEncoding(ui->lineEdit->text()).toStdString()+"&count=5&page="+QString::number(page).toStdString()));
+    request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/users/search.json","q="+QUrl::toPercentEncoding(ui->lineEdit->text()).toStdString()+"&count="+twitter->getUserSettings()->searchUsersByPage.toStdString()+"&page="+QString::number(page).toStdString()));
     QNetworkReply* reply= manager->get(request);
     connect(reply, SIGNAL(finished()),this, SLOT(userSearchFinished()));
 }

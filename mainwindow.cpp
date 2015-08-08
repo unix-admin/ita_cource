@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include <QFile>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -9,9 +9,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {    
     ui->setupUi(this);    
     ui->centralWidget->setAttribute(Qt::WA_DeleteOnClose,true);
-    ui->textEdit->setReadOnly(true);
-    ui->textEdit->setVisible(false);
-    tw = new Twitter(ui->textEdit);
+    ui->myTtwitterTimeline->setReadOnly(true);
+    tw = new Twitter(ui->myTtwitterTimeline);
     QPixmap myImg(":/data/splash.jpg");    
     ui->label_2->setPixmap(myImg);
     QTimer *timer = new QTimer;
@@ -21,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->insertPermanentWidget(0, ui->netText ,0 );
     ui->pushButton->setEnabled(false);
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(buttonClicked()));    
-    connect(ui->textEdit,SIGNAL(textChanged()),this, SLOT(splashInvisible()));
+    connect(ui->myTtwitterTimeline,SIGNAL(textChanged()),this, SLOT(splashInvisible()));
     connect(ui->searchButton,SIGNAL(clicked()),SLOT(userSearch()));
     connect(ui->centralWidget,SIGNAL(destroyed(QObject*)),this,SLOT(close()));
     connect(ui->tweetSearchButton,SIGNAL(clicked()),SLOT(tweetSearch()));   
@@ -29,23 +28,20 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(tw,SIGNAL(finished()),this, SLOT(userShow()));
     networkConnection();
     db = DataBase::getInstance();
+    connect(db,SIGNAL(userAdded()),this,SLOT(getNewUserData()));
     ui->comboBox->insertItems(0,db->getUsers());
     ui->verticalLayoutWidget_3->setVisible(true);
+    ui->horizontalLayoutWidget->setVisible(false);
     ui->formLayoutWidget->setVisible(false);
     ui->photo->setVisible(false);
-    ui->verticalLayoutWidget->setVisible(false);    
+    ui->verticalLayoutWidget->setVisible(false);
+    ui->tabWidget->setVisible(false);
 
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
-}
-
-void MainWindow::showPinWindow()
-{
-
-
 }
 
 void MainWindow::buttonClicked()
@@ -57,19 +53,8 @@ void MainWindow::buttonClicked()
     }
     else
     {
-    tw->setUserData(db->getUserParameters(ui->comboBox->currentText()));
+     userShow();
     }
-}
-
-void MainWindow::testbutton()
-{
-
-}
-
-void MainWindow::changeUrl()
-{
-
-
 }
 
 void MainWindow::networkConnection()
@@ -115,7 +100,7 @@ void MainWindow::replyFinished(QNetworkReply *)
 
 void MainWindow::updateUserTimeLine()
 {
-    ui->textEdit->setText(tw->userTimeLineText());
+    //ui->myTtwitterTimeline->setText(tw->userTimeLineText());
 }
 
 void MainWindow::splashInvisible()
@@ -146,6 +131,7 @@ void MainWindow::tweetSearch()
 void MainWindow::settingsShow()
 {
     Settings *settingsWindow = new Settings;
+    settingsWindow->setUserID(data.id);
     settingsWindow->exec();
     //connect(settingsWindow,SIGNAL(closed()),settingsWindow,SLOT(deleteLater()));
     settingsWindow->deleteLater();
@@ -154,15 +140,54 @@ void MainWindow::settingsShow()
 
 void MainWindow::userShow()
 {
-    Requests Request = new Requests;
-
-    tw->getUserTimeline();
-
+    QPixmap userPhoto;
+    if (data.id=="")
+     data = db->getData(ui->comboBox->currentText(),BY_NAME);
+    tw->setUserData(data);
+    tw->setUserSettings(db->getSettings(data.id));
+    Requests *request = new Requests;
+    Parser *dataParser = new Parser;
+    QByteArray userData = request->getRequest(GET_USER,"screen_name="+data.screen_name.toStdString(),"",tw);
+    QStringList myDada = dataParser->parseUserInfo(&userData);
+    ui->username->setText( data.name);
+    ui->displayname->setText( data.screen_name);
+    ui->description->setText( data.description);
+    ui->tweets->setText("Твиты: "+ data.statuses_count);
+    ui->friends->setText("Друзья: "+ data.friends_count);
+    ui->followers->setText("Читатели: "+ data.followers_count);
+    userPhoto.loadFromData( data.profile_image_data);
+    ui->photo->setPixmap(userPhoto);
+    userData = request->getRequest(GET_HOME_TIMELINE,"","",tw);
+    ui->myTtwitterTimeline->setText(dataParser->parseTweets(&userData));
     ui->verticalLayoutWidget_3->setVisible(false);
     ui->formLayoutWidget->setVisible(true);
     ui->tweetSearchButton->setVisible(true);
     ui->photo->setVisible(true);
     ui->verticalLayoutWidget->setVisible(true);
+    ui->horizontalLayoutWidget->setVisible(true);
+    ui->tabWidget->setVisible(true);
+    delete request;
+    delete dataParser;
+}
+
+void MainWindow::getNewUserData()
+{
+    QString lastID = db->getLastID();
+    Requests *request = new Requests;
+    Parser *dataParser = new Parser;
+    data = db->getData(lastID,BY_ID);
+    QByteArray userData = request->getRequest(GET_USER,"screen_name=",data.screen_name.toStdString(),tw);
+    QStringList myDada = dataParser->parseUserInfo(&userData);
+    data.twitterID = myDada.value(0);
+    data.name = myDada.value(1);
+    data.description = myDada.value(3);
+    data.statuses_count = myDada.value(4);
+    data.friends_count = myDada.value(5);
+    data.followers_count = myDada.value(6);
+    data.profile_image_url = myDada.value(7);
+    data.profile_image_data = request->getImage(myDada.value(7));
+    connect(db, SIGNAL(workFinished()),this, SLOT(userShow()));
+    db->updateNewUserData(lastID,&data);
 }
 
 void MainWindow::closeEvent(QCloseEvent *)

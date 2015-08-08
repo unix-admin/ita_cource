@@ -2,7 +2,6 @@
 #define USERDETAILS_H
 
 #include <QWidget>
-#include <twitter.h>
 #include <QMap>
 #include <QJsonDocument>
 #include <QVariant>
@@ -12,7 +11,10 @@
 #include <QNetworkReply>
 #include <QEventLoop>
 #include <QPixmap>
-
+#include "requests.h"
+#include "parser.h"
+#include "database.h"
+#include "twitter.h"
 namespace Ui {
 class UserDetails;
 }
@@ -31,18 +33,14 @@ private:
     Twitter *twitter;
     std::string id;
     QPixmap photo;
+    DataBase *db;
+    DataBase::userData userData;
 private:
-    void getUserinfo(std::string id);
-    void getUserTimeline(std::string id);
-    void parseUserinfoResults(QMap<QString,QVariant> results);
-    void parseUserTimelineResults(QList<QVariant> results);
-    void setDefaultWindow();
-private slots:
-    void getUserInfoFinished();
-    void getUserTimelineFinished();
-    void imageDownloadFinished();
+    void getUserinfo(std::string id);    
 signals:
-    void getInfoFinished();
+    formClosed();
+private slots:
+    void toDatabase();
 };
 
 #endif // USERDETAILS_H

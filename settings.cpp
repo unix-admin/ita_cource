@@ -14,7 +14,7 @@ Settings::Settings(QWidget *parent) :
     connect(ui->sliderTimeToSync, SIGNAL(valueChanged(int)),this,SLOT(changeValue()));
     connect(ui->buttonBox,SIGNAL(accepted()),this,SLOT(saveChanges()));
     connect(ui->buttonBox,SIGNAL(rejected()),this,SLOT(close()));
-    getSettings();
+
 }
 
 Settings::~Settings()
@@ -23,20 +23,21 @@ Settings::~Settings()
     delete ui;
 }
 
-void Settings::setUserID(int ID)
+void Settings::setUserID(QString ID)
 {
     userID = ID;
+    getSettings();
 }
 
 void Settings::getSettings()
 {
-    QStringList userSettings;
-    userSettings = settingsDB->getSettings(1);
-    ui->sliderUsertimeline->setValue(userSettings.value(0).toInt());
-    ui->sliderSearchedTweets->setValue(userSettings.value(1).toInt());
-    ui->sliderSearchedUsers->setValue(userSettings.value(2).toInt());
-    ui->sliderMaxTweets->setValue(userSettings.value(3).toInt());
-    ui->sliderTimeToSync->setValue(userSettings.value(4).toInt());
+    DataBase::userSettings userSettings;
+    userSettings = settingsDB->getSettings(userID);
+    ui->sliderUsertimeline->setValue(userSettings.timelineTweetsByPage.toInt());
+    ui->sliderSearchedTweets->setValue(userSettings.searchTweetsByPage.toInt());
+    ui->sliderSearchedUsers->setValue(userSettings.searchUsersByPage.toInt());
+    ui->sliderMaxTweets->setValue(userSettings.searchTweetsToDatabase.toInt());
+    ui->sliderTimeToSync->setValue(userSettings.refreshTime.toInt());
 }
 
 void Settings::changeValue()
@@ -67,7 +68,7 @@ void Settings::saveChanges()
     values.append(ui->valueMaxUsers->text());
     values.append(ui->valueMaxTweetsToSync->text());
     values.append(ui->valueSyncTime->text());
-    settingsDB->setSettings(1,values);
+    settingsDB->setSettings(userID,values);
     close();
 }
 

@@ -25,22 +25,19 @@ public:
     QUrl getPIN();
     QUrl accessToken();
     void setPin(std::string PIN);
-    void setAccessToken(std::string response);
-    void getUserTimeline();
-    QString userTimeLineText();
-    int getuserSearchResultByPage();
-    void userSerch(QString userName);
+    void setAccessToken(std::string response);    
     QUrl generateQueryString(std::string url, std::string parameters);
-    void setUserData(QStringList userData);
-
+    void setUserData(DataBase::userData data);
+    void setUserSettings(DataBase::userSettings settings);
+    DataBase::userData *getUserData();
+    DataBase::userSettings *getUserSettings();
 struct requestParamerers{
     QByteArray name;
     QByteArray value;
 };
 public slots:
         void fin();
-        void parseUserTimelineFinished();
-        void userSearchFinished();
+
 
 signals: finished();
 
@@ -52,10 +49,7 @@ private : std::string key;
           std::string access_token_url;
           std::string oauth_token;
           std::string oauth_token_secret;
-
-
           std::string oauthSignature;
-
           OAuth::Client *oauthClient;
           OAuth::Consumer *oauthConsumer;
           OAuth::Token *request_token;
@@ -63,30 +57,8 @@ private : std::string key;
           QMap<QString, QVariant> *userTimeLineMap;
           QString *userTimeLine;
           QTextEdit *returnText;
-          //User Settings
-          QString userID;
-          QString userName;
-          QString twitterUserID;
-          std::string accessTokenKey;
-          std::string accessTokenSecret;
-          QString displayName;
-          QString description;
-          QByteArray image;
-          QString imageUrl;
-          QString timelineTweetsByPage;
-          QString searchTweetsByPage;
-          QString searchUsersByPage;
-          QString searchTweetsToDatabase;
-          QString refreshTime;
-
-          int userSearchResultByPage;
-
-
-private slots:
-       void replyFinished();
-private:
-       void parseUserTimeline(QMap<QString, QVariant> *map);
-
+          DataBase::userData userData;
+          DataBase::userSettings userSettings;
 
 };
 

@@ -18,6 +18,7 @@ UserDetails::~UserDetails()
 
 void UserDetails::prepareData(Twitter *clsTwitter, std::string userid)
 {
+    db = DataBase::getInstance();
     id = userid;
     twitter = clsTwitter;
     ui->label->resize(200,200);
@@ -27,130 +28,57 @@ void UserDetails::prepareData(Twitter *clsTwitter, std::string userid)
     ui->horizontalLayoutWidget->setVisible(false);
     ui->gridLayoutWidget->setVisible(false);
     movie->start();
+    connect(ui->buttonToDatabase,SIGNAL(clicked(bool)),this, SLOT(toDatabase()));
     this->resize(200,200);
-    getUserinfo(id);
     this->show();
-
+    getUserinfo(id);
 
 }
 
 void UserDetails::getUserinfo(std::string id)
 {
-    QNetworkAccessManager *manager = new QNetworkAccessManager;
-    QNetworkRequest request;
-    request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/users/show.json","user_id="+id));
-    QNetworkReply* reply= manager->get(request);
-    connect(reply, SIGNAL(finished()),this, SLOT(getUserInfoFinished()));
-}
+    Requests *getInfo = new Requests;
 
-void UserDetails::getUserTimeline(std::string id)
-{
-    QNetworkAccessManager *manager = new QNetworkAccessManager;
-    QNetworkRequest request;
-    request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/statuses/user_timeline.json","user_id="+id+"&count=200"));
-    QNetworkReply* reply= manager->get(request);
-    connect(reply, SIGNAL(finished()),this, SLOT(getUserTimelineFinished()));
-}
-
-
-void UserDetails::getUserInfoFinished()
-{
-    QMap<QString,QVariant> detailedUserInfo;
-
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-    if (reply->error() == QNetworkReply::NoError)
-      {
-        QByteArray qb;
-        qb.append(reply->readAll());
-        detailedUserInfo = QJsonDocument::fromJson(qb).toVariant().toMap();
-        parseUserinfoResults(detailedUserInfo);
-      }
-    else qDebug()<<reply->errorString();
-    reply->deleteLater();
-}
-
-void UserDetails::getUserTimelineFinished()
-{
-
-    QMap<QString,QVariant> timelineMap;
-    QList<QVariant> results;
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-    if (reply->error() == QNetworkReply::NoError)
-      {
-        QByteArray qb = "{\"fuckingJsonFromTwitter\": ";
-        qb.append(reply->readAll());
-        qb.append("}");
-        timelineMap = QJsonDocument::fromJson(qb).toVariant().toMap();
-        results.append(timelineMap.begin().value().toList());
-        parseUserTimelineResults(results);
-      }
-    else qDebug()<<reply->errorString();
-    reply->deleteLater();
-
-}
-
-void UserDetails::imageDownloadFinished()
-{
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-
-    photo.loadFromData(reply->readAll());
-
-    reply->deleteLater();
-}
-
-void UserDetails::parseUserinfoResults(QMap<QString, QVariant> results)
-{
-    ui->label_2->setText(results.find("name").value().toString());
-    ui->label_3->setText(results.find("screen_name").value().toString());
-    ui->label_4->setText(results.find("description").value().toString());
-    ui->label_5->setText("Твиты: "+results.find("statuses_count").value().toString());
-    ui->label_6->setText("Друзья: "+results.find("friends_count").value().toString());
-    ui->label_7->setText("Читатели: "+results.find("followers_count").value().toString());
-    QNetworkAccessManager *manager = new QNetworkAccessManager;
-    QNetworkRequest request;
-    QEventLoop event;
-    request.setUrl(QUrl(results.find("profile_image_url").value().toString().replace("_normal","_reasonably_small")));
-    manager->get(request);
-    QNetworkReply* reply= manager->get(request);
-    connect( reply, SIGNAL(finished()),this, SLOT(imageDownloadFinished()));
-    connect( reply, SIGNAL(finished()),&event, SLOT(quit()));
-    event.exec();
-    getUserTimeline(id);
-}
-
-void UserDetails::parseUserTimelineResults(QList<QVariant> results)
-{
-
-
-    QMap<QString, QVariant>::const_iterator user;
-    QMap<QString, QVariant>::const_iterator text;
-    QMap<QString, QVariant>::const_iterator createDate;
-    QMap<QString, QVariant>::const_iterator userName;
-    //QList<QVariant> tweets;
+    QByteArray info;
+    QStringList parsedInfo;
+    info = getInfo->getRequest(GET_USER_BY_ID,id,"",twitter);
+    Parser *parseInfo = new Parser;
     QString timeLine;
-    timeLine.append("<style>.select {font-weight: 600;} </style>");
-    QMap<QString, QVariant> mymap;
-    QMap<QString, QVariant> userMap;
-    for ( int i = 0 ; i<results.count(); i++)
-    {
-       mymap = results.at(i).toMap();
-       user = mymap.find("user");
-       text =  mymap.find("text");
-       createDate=  mymap.find("created_at");
-       userMap = user.value().toMap();
-       userName= userMap.find("screen_name");
-       timeLine.append("<span class=\"select\">"+createDate.value().toString()+" "+userName.value().toString() + "</span>:" + text.value().toString()+";<br>");
-
-    }
-
-    ui->textBrowser->setHtml(timeLine);
+    parsedInfo = parseInfo->parseUserInfo(&info);
+    userData.twitterID = parsedInfo.value(0);
+    userData.name = parsedInfo.value(1);
+    userData.screen_name = parsedInfo.value(2);
+    userData.description = parsedInfo.value(3);
+    userData.statuses_count = parsedInfo.value(4);
+    userData.friends_count = parsedInfo.value(5);
+    userData.followers_count = parsedInfo.value(6);
+    userData.profile_image_url = parsedInfo.value(7);
+    userData.profile_image_data = getInfo->getImage(parsedInfo.value(7));
+    ui->label_2->setText(userData.name);
+    ui->label_3->setText(userData.screen_name);
+    ui->label_4->setText(userData.description);
+    ui->label_5->setText("Твиты: "+userData.statuses_count);
+    ui->label_6->setText("Друзья: "+userData.friends_count);
+    ui->label_7->setText("Читатели: "+userData.followers_count);
+    photo.loadFromData(userData.profile_image_data);
+    info = getInfo->getRequest(GET_USER_TIMELINE,id,"&count="+twitter->getUserSettings()->timelineTweetsByPage.toStdString(),twitter);
+    timeLine = parseInfo->parseTweets(&info);
+    ui->textBrowser->setText(timeLine);
     this->resize(400,580);
     ui->label->resize(128,128);
     ui->label->setPixmap(photo);
     ui->horizontalLayoutWidget->setVisible(true);
     ui->gridLayoutWidget->setVisible(true);
     ui->textBrowser->setVisible(true);
-
+    if ((db->checkUser(userData.screen_name)))
+            ui->buttonToDatabase->setVisible(false);
+    delete getInfo;
+    delete parseInfo;
 }
 
+void UserDetails::toDatabase()
+{
+    db->addReadableUser(&userData,twitter->getUserData()->id);
+    ui->buttonToDatabase->setVisible(false);
+}
 

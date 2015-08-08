@@ -13,6 +13,8 @@
 
 enum requestType{
      GET_HOME_TIMELINE=0
+    ,GET_USER
+    ,GET_USER_BY_ID
     ,GET_USER_TIMELINE
     ,TWEETS_SEARCH
     ,TWEETS_SEARCH_NAVIGATE
@@ -28,6 +30,7 @@ class Requests :public QObject
 public:
     Requests();
     QByteArray getRequest(requestType type, std::string parameters, std::string parameters2, Twitter *clsTwitter);
+    QByteArray getImage(QUrl requestURL);
 
 private:
     QByteArray requestResult;
@@ -35,6 +38,7 @@ private:
 private slots:
     void replyFinished();
     void managerFinished();
+    void imageDownloadFinished();
 
 };
 

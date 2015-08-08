@@ -50,7 +50,7 @@
      <x>10</x>
      <y>200</y>
      <width>371</width>
-     <height>321</height>
+     <height>301</height>
     </rect>
    </property>
    <property name="font">
@@ -154,6 +154,45 @@
      </widget>
     </item>
    </layout>
+  </widget>
+  <widget class="QPushButton" name="buttonNext">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>510</y>
+     <width>131</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Следующая страница</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonPrevious">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>510</y>
+     <width>121</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Предыдущая траница</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonToDatabase">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>540</y>
+     <width>371</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>В базу!</string>
+   </property>
   </widget>
  </widget>
  <resources/>

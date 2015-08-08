@@ -9,7 +9,7 @@
 //#include <QList>
 #include <QStringList>
 #include <QObject>
-
+#include "requests.h"
 class Parser : public QObject
 {
     Q_OBJECT
@@ -20,13 +20,13 @@ public:
     void parseSearchMetadata(QByteArray *data, QStringList *listData);
     QString maxTweetID;
     QString minTweetID;
+    QStringList parseUserInfo(QByteArray *data);
 signals:
     parseFinished();
 public slots:
     void quit();
 private :
-    QString getmaxTweetID(QList<QVariant> tweetsList);
-    QString getminTweetID(QList<QVariant> tweetsList);
+    QString dateFormat(QVariant value);
 };
 
 #endif // PARSER_H
