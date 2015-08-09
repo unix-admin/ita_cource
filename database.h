@@ -13,6 +13,11 @@ enum userparameters{
     ,BY_DISPLAY_NAME
 };
 
+enum queryTypes{
+     NEW_USER=0
+    ,USER_TO_READ
+};
+
 class DataBase : public QObject
 {
     Q_OBJECT
@@ -40,7 +45,15 @@ public:
         QString searchTweetsToDatabase;
         QString refreshTime;
     };
-
+    struct tweetsData
+    {
+        QString tweetID;
+        QString tweetTime;
+        QString username;
+        QString text;
+        QString twitterUserID;
+        QString searchID;
+    };
     static DataBase * getInstance() {
             if(!p_instance)
                 p_instance = new DataBase();
@@ -52,9 +65,13 @@ public:
     userData getData (QString parameter, userparameters type);
     void addNewUser(QString accessToken, QString accessTokenSecret, QString displayName);
     bool checkUser(QString displayName);
+    bool checkReadableUser(QString userID, QString twitterID);
     QString getLastID();
     void updateNewUserData(QString parameter, userData *data);
-    void addReadableUser(userData *data, QString senderID);
+    void addReadableUser(userData *data, QString senderID, queryTypes typeQuery);
+    void insertTweetsToDatabase(tweetsData *dataToInsert);
+    QList<tweetsData> getVirtualTimeline(QString userID, int leftLimit, int rightLimit);
+    int countRecordsInVirtualTimeLine(QString userID);
 
 private:
     static DataBase * p_instance;

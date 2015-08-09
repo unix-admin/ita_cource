@@ -32,11 +32,12 @@ public:
 private:
     Ui::MainWindow *ui;
     Twitter *tw;
-
-
     bool netError;
     DataBase *db;
     DataBase::userData data;
+    int leftLimit;
+    int rightLimit;
+    int pages;
 private slots:
     void buttonClicked();
 
@@ -52,9 +53,11 @@ private slots:
     void settingsShow();
     void userShow();
     void getNewUserData();
+    void moved();
 
 private:
-void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;
+    QString getVirtualTimeLine(int left, int right);
 
 };
 

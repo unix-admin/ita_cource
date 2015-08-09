@@ -21,12 +21,14 @@ public:
     QString maxTweetID;
     QString minTweetID;
     QStringList parseUserInfo(QByteArray *data);
+    QList<QVariant> parseTweetsToDatabase(QByteArray *data);
+    QString dateFormat(QVariant value);
 signals:
     parseFinished();
 public slots:
     void quit();
 private :
-    QString dateFormat(QVariant value);
+
 };
 
 #endif // PARSER_H

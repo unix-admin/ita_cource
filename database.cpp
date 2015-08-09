@@ -20,9 +20,33 @@ bool DataBase::checkUser(QString displayName)
 {
     bool result = false;
     connect();
-    QSqlQuery checkUserQuery("SELECT userID FROM users WHERE displayName=\""+displayName+"\"");
-    if (checkUserQuery.record().count() > 0 )
+    QString queryString= "SELECT userID FROM users WHERE displayName=\""+displayName+"\"";
+    QSqlQuery checkUserQuery;
+    checkUserQuery.prepare(queryString);
+    checkUserQuery.exec();
+    checkUserQuery.first();
+    if (checkUserQuery.value(0).toString() =="")
+        result = false;
+    else
         result = true;
+    disconnect();
+    return result;
+}
+
+bool DataBase::checkReadableUser(QString userID, QString twitterID)
+{
+    bool result = false;
+    connect();
+    QString queryString = "SELECT readableUsers.twitterID FROM readableUsers, users WHERE readableUsers.twitterID=users.twitterID AND readableUsers.userID="+userID+" AND users.twitterID="+twitterID;
+    QSqlQuery checkReadableUserQuery;
+    checkReadableUserQuery.prepare(queryString);
+    checkReadableUserQuery.exec();
+    checkReadableUserQuery.first();
+    if (checkReadableUserQuery.value(0).toString() =="")
+        result = false;
+    else
+        result = true;
+    disconnect();
     return result;
 }
 
@@ -60,11 +84,14 @@ void DataBase::updateNewUserData(QString id, userData *data )
     emit workFinished();
 }
 
-void DataBase::addReadableUser(DataBase::userData *data, QString senderID)
+void DataBase::addReadableUser(DataBase::userData *data, QString senderID, queryTypes typeQuery)
 {
     connect();
     QSqlQuery updateUserDataQuery;
-    QString queryString = "INSERT INTO users(userName,displayName,twitterID,desription,tweets,friends,followers,image,imageUrl,usertype) VALUES(\""+data->name\
+    QString queryString;
+    if (typeQuery == NEW_USER)
+    {
+        queryString = "INSERT INTO users(userName,displayName,twitterID,desription,tweets,friends,followers,image,imageUrl,usertype) VALUES(\""+data->name\
                 +"\",\""+data->screen_name\
                 +"\","+data->twitterID\
                 +", \""+data->description \
@@ -73,16 +100,84 @@ void DataBase::addReadableUser(DataBase::userData *data, QString senderID)
                 +", "+data->followers_count \
                 +", :image"
                 +", \""+data->profile_image_url +"\",0)";
-     qDebug() << queryString;
-     updateUserDataQuery.prepare(queryString);
-     updateUserDataQuery.addBindValue(data->profile_image_data);
+
+        updateUserDataQuery.prepare(queryString);
+        updateUserDataQuery.addBindValue(data->profile_image_data);
         updateUserDataQuery.exec();
         updateUserDataQuery.finish();
-        queryString = "INSERT INTO readableUsers (userID,twitterID) VALUES("+senderID+","+data->twitterID+")" ;
-        qDebug() << queryString;
-        updateUserDataQuery.prepare(queryString);
-        updateUserDataQuery.exec();
-        disconnect();
+    }
+    queryString = "INSERT INTO readableUsers (userID,twitterID) VALUES("+senderID+","+data->twitterID+")" ;
+    updateUserDataQuery.prepare(queryString);
+    updateUserDataQuery.exec();
+    disconnect();
+}
+
+void DataBase::insertTweetsToDatabase(DataBase::tweetsData *dataToInsert)
+{
+    connect();
+    QSqlQuery insertTweetsToDatabaseQuery;
+    QString queryString;
+    queryString = "INSERT INTO tweets (tweetID, tweetTime, username, text, userID, searchID)  VALUES(" \
+            +dataToInsert->tweetID+",\""\
+            +dataToInsert->tweetTime+"\",\""
+            +dataToInsert->username+"\",\""
+            +dataToInsert->text+"\","
+            +dataToInsert->twitterUserID+","
+            +dataToInsert->searchID+")";
+    insertTweetsToDatabaseQuery.prepare(queryString);
+    insertTweetsToDatabaseQuery.exec();
+    disconnect();
+}
+
+QList<DataBase::tweetsData> DataBase::getVirtualTimeline(QString userID, int leftLimit, int rightLimit)
+{
+    QList<tweetsData> result;
+    tweetsData queryResult;
+    QString leftLimitData;
+    QString rightLimitData = QString::number(rightLimit);
+    connect();
+    QSqlQuery getVirtualTimelineQuery;
+    if (leftLimit==0)
+    {
+        leftLimitData="";
+    }
+    else
+    {
+        leftLimitData=QString::number(leftLimit)+",";
+    }
+
+    QString queryString = "SELECT tweets.tweetTime, tweets.username, tweets.text FROM tweets, users, readableUsers " \
+                          "WHERE tweets.userID=readableUsers.twitterID AND readableUsers.userID = users.userID AND users.userID="+userID\
+                          +" ORDER BY tweets.tweetID DESC LIMIT "+leftLimitData+rightLimitData;
+    getVirtualTimelineQuery.prepare(queryString);
+    getVirtualTimelineQuery.exec();
+    while (getVirtualTimelineQuery.next())
+    {
+        queryResult.tweetTime = getVirtualTimelineQuery.value(0).toString();
+        queryResult.username = getVirtualTimelineQuery.value(1).toString();
+        queryResult.text = getVirtualTimelineQuery.value(2).toString();
+        result.append(queryResult);
+    }
+    return result;
+}
+
+int DataBase::countRecordsInVirtualTimeLine(QString userID)
+{
+    int result;
+    connect();
+    QString queryString = "SELECT count() FROM tweets, users, readableUsers " \
+                          "WHERE tweets.userID=readableUsers.twitterID AND readableUsers.userID = users.userID AND users.userID="+userID;
+    QSqlQuery countRecordsInVirtualTimeLineQuery;
+    countRecordsInVirtualTimeLineQuery.prepare(queryString);
+    countRecordsInVirtualTimeLineQuery.exec();
+    countRecordsInVirtualTimeLineQuery.first();
+    if (countRecordsInVirtualTimeLineQuery.value(0).toString() =="")
+        result = 0;
+    else
+        result = countRecordsInVirtualTimeLineQuery.value(0).toInt();
+    disconnect();
+    return result;
+
 }
 
 

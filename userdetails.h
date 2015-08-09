@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QMap>
+#include <QList>
 #include <QJsonDocument>
 #include <QVariant>
 #include <QList>
@@ -35,12 +36,16 @@ private:
     QPixmap photo;
     DataBase *db;
     DataBase::userData userData;
+    int pages;
+    int currentPage;
 private:
-    void getUserinfo(std::string id);    
+    void getUserinfo(std::string id);
+    void timeLineToDatabase();
 signals:
     formClosed();
 private slots:
     void toDatabase();
+    void appendTimeline();
 };
 
 #endif // USERDETAILS_H

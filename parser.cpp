@@ -94,6 +94,21 @@ QStringList Parser::parseUserInfo(QByteArray *data)
     return result;
 }
 
+QList<QVariant> Parser::parseTweetsToDatabase(QByteArray *data)
+{
+    QMap<QString,QVariant> dataToParse;
+    dataToParse = QJsonDocument::fromJson(*data).toVariant().toMap();
+    QList<QVariant> tweetsList;
+    QMap<QString, QVariant>::const_iterator iterator = dataToParse.constBegin();;
+
+    if (dataToParse.count()==2)
+    {
+     iterator++;
+    }
+    tweetsList = iterator.value().toList();
+    return tweetsList;
+}
+
 void Parser::quit()
 {
 
@@ -127,9 +142,6 @@ QString Parser::dateFormat(QVariant value)
     result.replace("Oct","Окт");
     result.replace("Nov","Ноя");
     result.replace("Dec","Дек");
-
-
-
     return result;
 }
 

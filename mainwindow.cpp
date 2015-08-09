@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFile>
+#include <QScrollBar>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -26,8 +27,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->tweetSearchButton,SIGNAL(clicked()),SLOT(tweetSearch()));   
     connect(ui->settingsButton,SIGNAL(clicked(bool)),this, SLOT(settingsShow()));
     connect(tw,SIGNAL(finished()),this, SLOT(userShow()));
+    connect(ui->myVirtualTimeline->verticalScrollBar(),SIGNAL(valueChanged(int)),this,SLOT(moved()));
     networkConnection();
     db = DataBase::getInstance();
+    leftLimit=0;
+    rightLimit=100;
     connect(db,SIGNAL(userAdded()),this,SLOT(getNewUserData()));
     ui->comboBox->insertItems(0,db->getUsers());
     ui->verticalLayoutWidget_3->setVisible(true);
@@ -166,6 +170,8 @@ void MainWindow::userShow()
     ui->verticalLayoutWidget->setVisible(true);
     ui->horizontalLayoutWidget->setVisible(true);
     ui->tabWidget->setVisible(true);
+    pages = db->countRecordsInVirtualTimeLine(data.id);
+    ui->myVirtualTimeline->setText(getVirtualTimeLine(leftLimit,rightLimit));
     delete request;
     delete dataParser;
 }
@@ -190,8 +196,31 @@ void MainWindow::getNewUserData()
     db->updateNewUserData(lastID,&data);
 }
 
+void MainWindow::moved()
+{
+    if (ui->myVirtualTimeline->verticalScrollBar()->value()== ui->myVirtualTimeline->verticalScrollBar()->maximum())
+    {   leftLimit +=100;
+        rightLimit+=100;
+        if (rightLimit < pages)
+            ui->myVirtualTimeline->append(getVirtualTimeLine(leftLimit,rightLimit));
+    }
+}
+
 void MainWindow::closeEvent(QCloseEvent *)
 {
 
- QApplication::exit();
+    QApplication::exit();
+}
+
+QString MainWindow::getVirtualTimeLine(int left,int right)
+{
+    QList<DataBase::tweetsData> tweets;
+    tweets = db->getVirtualTimeline(data.id,left,right);
+    QString result;
+    result.append("<style>.select {font-weight: 600;} </style>");
+    for(int i=0; i<tweets.count(); i++)
+    {
+        result.append("<span class=\"select\">"+tweets.at(i).tweetTime+" "+tweets.at(i).username + "</span>:" +tweets.at(i).text+";<br>");
+    }
+    return result;
 }
