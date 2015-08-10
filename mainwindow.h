@@ -54,6 +54,7 @@ private slots:
     void userShow();
     void getNewUserData();
     void moved();
+    void myUserClicked();
 
 private:
     void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;

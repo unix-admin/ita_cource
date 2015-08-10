@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>401</width>
-    <height>717</height>
+    <height>736</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -132,42 +132,6 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="formLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>550</y>
-      <width>381</width>
-      <height>113</height>
-     </rect>
-    </property>
-    <layout class="QFormLayout" name="formLayout">
-     <property name="rowWrapPolicy">
-      <enum>QFormLayout::WrapAllRows</enum>
-     </property>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="searchButton">
-       <property name="text">
-        <string>Поиск пользователей</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QPushButton" name="tweetSearchButton">
-       <property name="text">
-        <string>Поиск твитов</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QPushButton" name="settingsButton">
-       <property name="text">
-        <string>Настройки</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
@@ -205,6 +169,8 @@
        <enum>Qt::ClickFocus</enum>
       </property>
      </widget>
+     <zorder>myTtwitterTimeline</zorder>
+     <zorder>verticalLayoutWidget_3</zorder>
     </widget>
     <widget class="QWidget" name="virtualTimeLine">
      <attribute name="title">
@@ -276,6 +242,49 @@
        </property>
        <property name="text">
         <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="formLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>530</y>
+      <width>381</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="rowWrapPolicy">
+      <enum>QFormLayout::WrapAllRows</enum>
+     </property>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="searchButton">
+       <property name="text">
+        <string>Поиск пользователей</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QPushButton" name="tweetSearchButton">
+       <property name="text">
+        <string>Поиск твитов</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="myUsers">
+       <property name="text">
+        <string>Мои пользователи</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QPushButton" name="settingsButton">
+       <property name="text">
+        <string>Настройки</string>
        </property>
       </widget>
      </item>

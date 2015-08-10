@@ -9,8 +9,9 @@
 #include <QJsonDocument>
 #include <QVariant>
 #include <QMap>
+Twitter* Twitter::instance = 0;
 
-Twitter::Twitter(QTextEdit *edit)
+Twitter::Twitter()
 {
     key = "GgqXEJQD6rglvtLRnSGGPgB75"; // Key from Twitter
     secret = "hffrwdXOxsdOZ14JDPONP3VbhPGcYAuLkCAfSC6k1JJPMmjEpi"; // Secret from Twitter
@@ -22,16 +23,10 @@ Twitter::Twitter(QTextEdit *edit)
     oauthConsumer = new OAuth::Consumer(key,secret);
     oauthClient = new OAuth::Client(oauthConsumer);
     userTimeLineMap = new QMap<QString, QVariant>;
-    userTimeLine = new QString;
-    returnText = edit;
+    userTimeLine = new QString;    
     userData.accessTokenKey = "";
     userData.accessTokenSecret = "";
     request_token = new OAuth::Token;
-}
-
-Twitter::Twitter()
-{
-
 }
 
 QUrl Twitter::getRequestToken()

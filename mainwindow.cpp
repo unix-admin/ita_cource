@@ -2,16 +2,19 @@
 #include "ui_mainwindow.h"
 #include <QFile>
 #include <QScrollBar>
+#include "readableusers.h"
+#include <QSslSocket>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 
 {    
+
     ui->setupUi(this);    
     ui->centralWidget->setAttribute(Qt::WA_DeleteOnClose,true);
     ui->myTtwitterTimeline->setReadOnly(true);
-    tw = new Twitter(ui->myTtwitterTimeline);
+    tw = Twitter::getcls();
     QPixmap myImg(":/data/splash.jpg");    
     ui->label_2->setPixmap(myImg);
     QTimer *timer = new QTimer;
@@ -26,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->centralWidget,SIGNAL(destroyed(QObject*)),this,SLOT(close()));
     connect(ui->tweetSearchButton,SIGNAL(clicked()),SLOT(tweetSearch()));   
     connect(ui->settingsButton,SIGNAL(clicked(bool)),this, SLOT(settingsShow()));
+    connect(ui->myUsers,SIGNAL(clicked(bool)),this,SLOT(myUserClicked()));
     connect(tw,SIGNAL(finished()),this, SLOT(userShow()));
     connect(ui->myVirtualTimeline->verticalScrollBar(),SIGNAL(valueChanged(int)),this,SLOT(moved()));
     networkConnection();
@@ -67,16 +71,18 @@ void MainWindow::networkConnection()
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     connect(manager, SIGNAL(finished(QNetworkReply*)),this, SLOT(replyFinished(QNetworkReply*)));
     QNetworkRequest request;
-    request.setUrl(QUrl("https://twitter.com/login"));
+    request.setUrl(QUrl("http://abs.twimg.com/favicons/favicon.ico"));
     request.setRawHeader("User-Agent", "MyOwnBrowser 1.0");
-    QNetworkReply *reply = manager->get(request);
+    QNetworkReply *reply;
+
+    reply = manager->get(request);
     connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),SLOT(networkError()));
     connect(reply,SIGNAL(finished()),this,SLOT(networkOk()));
 }
 
 void MainWindow::networkError()
 {
-      netError = true;
+   netError = true;
 }
 
 void MainWindow::networkOk()
@@ -206,6 +212,13 @@ void MainWindow::moved()
     }
 }
 
+void MainWindow::myUserClicked()
+{
+    ReadableUsers *myUsers = new ReadableUsers;
+    myUsers->show();
+
+}
+
 void MainWindow::closeEvent(QCloseEvent *)
 {
 
@@ -215,7 +228,7 @@ void MainWindow::closeEvent(QCloseEvent *)
 QString MainWindow::getVirtualTimeLine(int left,int right)
 {
     QList<DataBase::tweetsData> tweets;
-    tweets = db->getVirtualTimeline(data.id,left,right);
+    tweets = db->getTimeline(data.id,left,right,VIRTUAL_TIMELINE);
     QString result;
     result.append("<style>.select {font-weight: 600;} </style>");
     for(int i=0; i<tweets.count(); i++)

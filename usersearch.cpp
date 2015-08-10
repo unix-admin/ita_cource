@@ -184,7 +184,8 @@ bool UserSearch::eventFilter(QObject *target, QEvent *event)
             if(myListBox.value(0)->documentTitle() !="-1")
              {
                  UserDetails *detailsForm = new UserDetails;
-                 detailsForm->prepareData(twitter,myListBox.value(i)->documentTitle().toStdString());
+                 connect(detailsForm,SIGNAL(formClosed()),detailsForm,SLOT(deleteLater()));
+                 detailsForm->prepareData(myListBox.value(i)->documentTitle());
                  break;
              }
            }

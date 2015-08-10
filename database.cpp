@@ -16,11 +16,33 @@ void DataBase::disconnect()
     }
 }
 
-bool DataBase::checkUser(QString displayName)
+bool DataBase::checkUser(QString parameter, userparameters queryType)
 {
     bool result = false;
     connect();
-    QString queryString= "SELECT userID FROM users WHERE displayName=\""+displayName+"\"";
+    QString queryString;
+    switch (queryType) {
+    case BY_ID:
+    {
+        queryString = "SELECT userID FROM users WHERE userID=\""+parameter+"\"";
+        break;
+    }
+    case BY_DISPLAY_NAME:
+    {
+        queryString = "SELECT userID FROM users WHERE displayName=\""+parameter+"\"";
+        break;
+    }
+    case BY_TWITTER_ID:
+    {
+        queryString = "SELECT userID FROM users WHERE twitterID="+parameter;
+        break;
+    }
+    case BY_NAME:
+    {
+        queryString = "SELECT userID FROM users WHERE userName=\""+parameter+"\"";
+        break;
+    }
+    }
     QSqlQuery checkUserQuery;
     checkUserQuery.prepare(queryString);
     checkUserQuery.exec();
@@ -129,14 +151,14 @@ void DataBase::insertTweetsToDatabase(DataBase::tweetsData *dataToInsert)
     disconnect();
 }
 
-QList<DataBase::tweetsData> DataBase::getVirtualTimeline(QString userID, int leftLimit, int rightLimit)
+QList<DataBase::tweetsData> DataBase::getTimeline(QString userID, int leftLimit, int rightLimit,queryTypes type)
 {
     QList<tweetsData> result;
     tweetsData queryResult;
     QString leftLimitData;
     QString rightLimitData = QString::number(rightLimit);
     connect();
-    QSqlQuery getVirtualTimelineQuery;
+    QSqlQuery getTimelineQuery;
     if (leftLimit==0)
     {
         leftLimitData="";
@@ -145,20 +167,64 @@ QList<DataBase::tweetsData> DataBase::getVirtualTimeline(QString userID, int lef
     {
         leftLimitData=QString::number(leftLimit)+",";
     }
-
-    QString queryString = "SELECT tweets.tweetTime, tweets.username, tweets.text FROM tweets, users, readableUsers " \
-                          "WHERE tweets.userID=readableUsers.twitterID AND readableUsers.userID = users.userID AND users.userID="+userID\
-                          +" ORDER BY tweets.tweetID DESC LIMIT "+leftLimitData+rightLimitData;
-    getVirtualTimelineQuery.prepare(queryString);
-    getVirtualTimelineQuery.exec();
-    while (getVirtualTimelineQuery.next())
+    QString queryString;
+    switch (type) {
+    case BY_ID:
+        break;
+    case NEW_USER:
+        break;
+    case VIRTUAL_TIMELINE:
+    {   queryString = "SELECT tweets.tweetTime, tweets.username, tweets.text FROM tweets, users, readableUsers " \
+                      "WHERE tweets.userID=readableUsers.twitterID AND readableUsers.userID = users.userID AND users.userID="+userID\
+                      +" ORDER BY tweets.tweetID DESC LIMIT "+leftLimitData+rightLimitData;
+        break;
+    }
+    case USER_TIMELINE:
     {
-        queryResult.tweetTime = getVirtualTimelineQuery.value(0).toString();
-        queryResult.username = getVirtualTimelineQuery.value(1).toString();
-        queryResult.text = getVirtualTimelineQuery.value(2).toString();
+        queryString = "SELECT tweets.tweetTime, tweets.username, tweets.text FROM tweets WHERE tweets.userID="+userID\
+                      +" ORDER BY tweets.tweetID DESC LIMIT "+leftLimitData+rightLimitData;
+        break;
+    }
+    }
+    getTimelineQuery.prepare(queryString);
+    getTimelineQuery.exec();
+    while (getTimelineQuery.next())
+    {
+        queryResult.tweetTime = getTimelineQuery.value(0).toString();
+        queryResult.username = getTimelineQuery.value(1).toString();
+        queryResult.text = getTimelineQuery.value(2).toString();
         result.append(queryResult);
     }
     return result;
+}
+
+void DataBase::deleteUser(QString twitterID, QString readerID)
+{
+
+    connect();
+    QString queryString = "SELECT count() FROM readableUsers WHERE twitterID="+twitterID;
+    QSqlQuery deleteUserQuery;
+    deleteUserQuery.prepare(queryString);
+    deleteUserQuery.exec();
+    deleteUserQuery.first();
+    int count = deleteUserQuery.value(0).toInt();
+    if (count == 1)
+    {
+        deleteUserQuery.finish();
+        queryString = "DELETE FROM tweets WHERE userID="+twitterID;
+        deleteUserQuery.prepare(queryString);
+        deleteUserQuery.exec();
+        deleteUserQuery.finish();
+        queryString = "DELETE FROM users WHERE usertype=0 AND twitterID="+twitterID;
+        deleteUserQuery.prepare(queryString);
+        deleteUserQuery.exec();
+    }
+    deleteUserQuery.finish();
+    queryString = "DELETE FROM readableUsers WHERE twitterID="+twitterID + " AND userID="+readerID;
+    deleteUserQuery.prepare(queryString);
+    deleteUserQuery.exec();
+    deleteUserQuery.finish();
+    disconnect();
 }
 
 int DataBase::countRecordsInVirtualTimeLine(QString userID)
@@ -175,6 +241,42 @@ int DataBase::countRecordsInVirtualTimeLine(QString userID)
         result = 0;
     else
         result = countRecordsInVirtualTimeLineQuery.value(0).toInt();
+    disconnect();
+    return result;
+
+}
+
+int DataBase::countReadableUsers(QString userID)
+{
+  int result;
+  connect();
+  QString queryString = "SELECT count() FROM readableUsers WHERE userID="+userID;
+  QSqlQuery countReadableUsersQuery;
+  countReadableUsersQuery.prepare(queryString);
+  countReadableUsersQuery.exec();
+  countReadableUsersQuery.first();
+  if (countReadableUsersQuery.value(0).toString() =="")
+      result = 0;
+  else
+      result = countReadableUsersQuery.value(0).toInt();
+  disconnect();
+  return result;
+}
+
+QList<DataBase::userData> DataBase::getReadableUsers(QString userID)
+{
+    QList<DataBase::userData> result;
+    userData node;
+    connect();
+    QSqlQuery getReadableUsersQuery("SELECT users.userName, users.displayName, users.twitterID, users.image FROM users," \
+                                    " readableUsers WHERE users.twitterID = readableUsers.twitterID AND readableUsers.userID="+userID);
+    while (getReadableUsersQuery.next()) {
+        node.name = getReadableUsersQuery.value(0).toString();
+        node.screen_name = getReadableUsersQuery.value(1).toString();
+        node.twitterID = getReadableUsersQuery.value(2).toString();
+        node.profile_image_data = getReadableUsersQuery.value(3).toByteArray();
+        result.append(node);
+    }
     disconnect();
     return result;
 
@@ -244,6 +346,11 @@ DataBase::userData DataBase::getData(QString parameter , userparameters type)
     case BY_DISPLAY_NAME:
     {
         queryString = "SELECT * FROM users WHERE displayName='"+parameter+"'";
+        break;
+    }
+    case BY_TWITTER_ID:
+    {
+        queryString = "SELECT * FROM users WHERE twitterID='"+parameter+"'";
         break;
     }
     }

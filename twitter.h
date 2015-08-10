@@ -17,9 +17,14 @@
 class Twitter : public QObject
 {
     Q_OBJECT
+private:
+    static Twitter *instance;
 public:
-    Twitter(QTextEdit *edit);
-    Twitter();
+    static Twitter *getcls() {
+            if(!instance)
+                instance = new Twitter();
+            return instance;
+    }
     QUrl getRequestToken();
     void setOauthToken(std::string response);
     QUrl getPIN();
@@ -41,7 +46,11 @@ public slots:
 
 signals: finished();
 
-private : std::string key;
+private :
+          Twitter();
+          Twitter( const Twitter& );
+          Twitter& operator=( Twitter& );
+          std::string key;
           std::string secret;
           std::string request_token_url;
           std::string request_token_query_args;

@@ -27,22 +27,34 @@ class UserDetails : public QWidget
 public:
     explicit UserDetails(QWidget *parent = 0);
     ~UserDetails();
-    void prepareData(Twitter *clsTwitter, std::string userid);
+    void prepareData(QString userid);
 
 private:
     Ui::UserDetails *ui;
     Twitter *twitter;
-    std::string id;
+    QString id;
     QPixmap photo;
     DataBase *db;
     DataBase::userData userData;
+    Requests *twitterRequests;
+    Parser *parser;
+    QByteArray requestData;
+    QString userTimeline;
+    bool userInDatabase;
     int pages;
     int currentPage;
+
 private:
-    void getUserinfo(std::string id);
+    void getUserinfoFromTwitter(std::string id);
+    void getUserinfoFromDatabase(QString id);
+    QString getTimeline(int left, int right);
     void timeLineToDatabase();
+    void showResults();
+    void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;
+
 signals:
     formClosed();
+    finishedRequest();
 private slots:
     void toDatabase();
     void appendTimeline();

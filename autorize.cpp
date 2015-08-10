@@ -53,7 +53,7 @@ void autorize::showPinWindow()
     QString accessToken = response.queryItemValue("oauth_token");
     QString accessTokenSecret = response.queryItemValue("oauth_token_secret");
     DataBase *db = DataBase::getInstance();
-    if (db->checkUser(displayName))
+    if (db->checkUser(displayName,BY_DISPLAY_NAME))
     {
         QMessageBox message;
         message.warning(this,"Ошибка","Пользователь существует!");

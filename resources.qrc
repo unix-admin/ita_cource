@@ -6,5 +6,6 @@
         <file>data/images/disconnected.png</file>
         <file>data/images/loading.gif</file>
         <file>data/images/loading_small.gif</file>
+        <file>data/images/Delete.ico</file>
     </qresource>
 </RCC>

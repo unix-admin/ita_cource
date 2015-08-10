@@ -14,14 +14,18 @@ UserDetails::UserDetails(QWidget *parent) :
 
 UserDetails::~UserDetails()
 {
+    delete twitterRequests;
+    delete parser;
     delete ui;
 }
 
-void UserDetails::prepareData(Twitter *clsTwitter, std::string userid)
+void UserDetails::prepareData(QString userid)
 {
     db = DataBase::getInstance();
     id = userid;
-    twitter = clsTwitter;
+    twitter = Twitter::getcls();
+    twitterRequests = new Requests;
+    parser = new Parser;
     ui->label->resize(200,200);
     QMovie* movie = new QMovie(":/data/images/loading.gif");
     ui->label->setMovie(movie);
@@ -31,51 +35,40 @@ void UserDetails::prepareData(Twitter *clsTwitter, std::string userid)
     movie->start();
     connect(ui->buttonToDatabase,SIGNAL(clicked(bool)),this, SLOT(toDatabase()));
     connect(ui->userTimeline->verticalScrollBar(),SIGNAL(valueChanged(int)),this, SLOT(appendTimeline()));
-    currentPage = 1;
+    currentPage = 0;
+    pages = 100;
     this->resize(200,200);
     this->show();
-    getUserinfo(id);
+    userInDatabase = db->checkUser(userid,BY_TWITTER_ID);
+    if (!userInDatabase)
+    {
+        getUserinfoFromTwitter(id.toStdString());
+    }
+    else
+    {
+        getUserinfoFromDatabase(id);
+    }
+
 
 }
 
-void UserDetails::getUserinfo(std::string id)
+void UserDetails::getUserinfoFromTwitter(std::string id)
 {
-    Requests *getInfo = new Requests;
-
-    QByteArray info;
-    QStringList parsedInfo;
-    info = getInfo->getRequest(GET_USER_BY_ID,id,"",twitter);
-    Parser *parseInfo = new Parser;
-    QString timeLine;
-    parsedInfo = parseInfo->parseUserInfo(&info);
-    userData.twitterID = parsedInfo.value(0);
-    userData.name = parsedInfo.value(1);
-    userData.screen_name = parsedInfo.value(2);
-    userData.description = parsedInfo.value(3);
-    userData.statuses_count = parsedInfo.value(4);
-    userData.friends_count = parsedInfo.value(5);
-    userData.followers_count = parsedInfo.value(6);
-    userData.profile_image_url = parsedInfo.value(7);
-    userData.profile_image_data = getInfo->getImage(parsedInfo.value(7));
-    ui->label_2->setText(userData.name);
-    ui->label_3->setText(userData.screen_name);
-    ui->label_4->setText(userData.description);
-    ui->label_5->setText("Твиты: "+userData.statuses_count);
-    ui->label_6->setText("Друзья: "+userData.friends_count);
-    ui->label_7->setText("Читатели: "+userData.followers_count);
-    photo.loadFromData(userData.profile_image_data);
-    info = getInfo->getRequest(GET_USER_TIMELINE,id,"&count="+twitter->getUserSettings()->timelineTweetsByPage.toStdString()+"&page=1",twitter);
-    timeLine = parseInfo->parseTweets(&info);
-    ui->userTimeline->setText(timeLine);
-    this->resize(400,580);
-    ui->label->resize(128,128);
-    ui->label->setPixmap(photo);
-    ui->horizontalLayoutWidget->setVisible(true);
-    ui->gridLayoutWidget->setVisible(true);
-    ui->userTimeline->setVisible(true);
-    if (db->checkUser(userData.screen_name))
-        if(db->checkReadableUser(twitter->getUserData()->id,userData.twitterID))
-            ui->buttonToDatabase->setVisible(false);
+    QStringList userInfo;
+    requestData = twitterRequests->getRequest(GET_USER_BY_ID,id,"",twitter);
+    userInfo = parser->parseUserInfo(&requestData);
+    userData.twitterID = userInfo.value(0);
+    userData.name = userInfo.value(1);
+    userData.screen_name = userInfo.value(2);
+    userData.description = userInfo.value(3);
+    userData.statuses_count = userInfo.value(4);
+    userData.friends_count = userInfo.value(5);
+    userData.followers_count = userInfo.value(6);
+    userData.profile_image_url = userInfo.value(7);
+    userData.profile_image_data = twitterRequests->getImage(userInfo.value(7));
+    requestData = twitterRequests->getRequest(GET_USER_TIMELINE,id,"&count="+twitter->getUserSettings()->timelineTweetsByPage.toStdString()+"&page=1",twitter);
+    userTimeline = parser->parseTweets(&requestData);
+    ui->userTimeline->setText(userTimeline);
     if (userData.statuses_count.toInt()%twitter->getUserSettings()->timelineTweetsByPage.toInt() > 0)
     {
         pages = userData.statuses_count.toInt()/twitter->getUserSettings()->timelineTweetsByPage.toInt()+1;
@@ -84,13 +77,38 @@ void UserDetails::getUserinfo(std::string id)
     {
         pages = userData.statuses_count.toInt()/twitter->getUserSettings()->timelineTweetsByPage.toInt()+1;
     }
-    delete getInfo;
-    delete parseInfo;
+    showResults();
 }
+
+void UserDetails::getUserinfoFromDatabase(QString id)
+{
+    userData = db->getData(id,BY_TWITTER_ID);
+    ui->userTimeline->setText(getTimeline(0,100));
+    if(db->checkReadableUser(twitter->getUserData()->id,userData.twitterID))
+        ui->buttonToDatabase->setVisible(false);
+    showResults();
+
+}
+
+QString UserDetails::getTimeline(int left, int right)
+{
+        QList<DataBase::tweetsData> tweets;
+        tweets = db->getTimeline(userData.twitterID,left,right,USER_TIMELINE);
+        QString result;
+        result.append("<style>.select {font-weight: 600;} </style>");
+        for(int i=0; i<tweets.count(); i++)
+        {
+            result.append("<span class=\"select\">"+tweets.at(i).tweetTime+" "+tweets.at(i).username + "</span>:" +tweets.at(i).text+";<br>");
+        }
+        return result;
+}
+
+
+
 
 void UserDetails::toDatabase()
 {
-    if (db->checkUser(userData.screen_name))
+    if (db->checkUser(userData.screen_name,BY_DISPLAY_NAME))
      {
         db->addReadableUser(&userData,twitter->getUserData()->id,USER_TO_READ);
      }
@@ -111,16 +129,10 @@ void UserDetails::appendTimeline()
         if (!(currentPage > pages))
         {
             currentPage++;
-            Requests *getInfo = new Requests;
-            Parser *parseInfo = new Parser;
-            QString timeLine;
-            QByteArray info;
-            info = getInfo->getRequest(GET_USER_TIMELINE,id,"&count="+twitter->getUserSettings()->timelineTweetsByPage.toStdString() \
+            requestData = twitterRequests->getRequest(GET_USER_TIMELINE,id.toStdString(),"&count="+twitter->getUserSettings()->timelineTweetsByPage.toStdString() \
                                    +"&page="+QString::number(currentPage).toStdString(),twitter);
-            timeLine = parseInfo->parseTweets(&info);
-            ui->userTimeline->append(timeLine);
-            delete getInfo;
-            delete parseInfo;
+            userTimeline = parser->parseTweets(&requestData);
+            ui->userTimeline->append(userTimeline);
         }
    }
 }
@@ -128,9 +140,6 @@ void UserDetails::appendTimeline()
 void UserDetails::timeLineToDatabase()
 {
  int pages;
- Requests *requestTimeLine = new Requests;
- QByteArray getTimeLine;
- Parser *parserTimeLine = new Parser;
  QList<QVariant> tweetList;
  QMap<QString,QVariant> tweetMap;
  QMap<QString,QVariant> userMap;
@@ -146,14 +155,14 @@ void UserDetails::timeLineToDatabase()
     }
  for(int i=0; i<pages; i++)
  {
-    getTimeLine = requestTimeLine->getRequest(GET_USER_TIMELINE,userData.twitterID.toStdString(),"&count=200&exclude_replies=false"\
+    requestData = twitterRequests->getRequest(GET_USER_TIMELINE,userData.twitterID.toStdString(),"&count=200&exclude_replies=false"\
                                               "&page="+QString::number(i+1).toStdString(),twitter);
-    tweetList = parserTimeLine->parseTweetsToDatabase(&getTimeLine);
+    tweetList = parser->parseTweetsToDatabase(&requestData);
     for ( int t = 0 ; t<tweetList.count(); t++)
     {
        tweetMap = tweetList.at(t).toMap();
        tweetsToDB.tweetID =tweetMap.find("id_str").value().toString();
-       tweetsToDB.tweetTime = parserTimeLine->dateFormat(tweetMap.find("created_at").value());
+       tweetsToDB.tweetTime = parser->dateFormat(tweetMap.find("created_at").value());
        tweetsToDB.text = tweetMap.find("text").value().toString();
        tweetsToDB.twitterUserID = userData.twitterID;
        tweetsToDB.searchID = "0";
@@ -163,4 +172,26 @@ void UserDetails::timeLineToDatabase()
        db->insertTweetsToDatabase(&tweetsToDB);
     }
  }
+}
+
+void UserDetails::showResults()
+{
+    ui->label_2->setText(userData.name);
+    ui->label_3->setText(userData.screen_name);
+    ui->label_4->setText(userData.description);
+    ui->label_5->setText("Твиты: "+userData.statuses_count);
+    ui->label_6->setText("Друзья: "+userData.friends_count);
+    ui->label_7->setText("Читатели: "+userData.followers_count);
+    photo.loadFromData(userData.profile_image_data);
+    this->resize(400,580);
+    ui->label->resize(128,128);
+    ui->label->setPixmap(photo);
+    ui->horizontalLayoutWidget->setVisible(true);
+    ui->gridLayoutWidget->setVisible(true);
+    ui->userTimeline->setVisible(true);
+}
+
+void UserDetails::closeEvent(QCloseEvent *)
+{
+    emit formClosed();
 }
