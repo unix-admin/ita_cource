@@ -93,7 +93,7 @@ void UserDetails::getUserinfoFromDatabase(QString id)
 QString UserDetails::getTimeline(int left, int right)
 {
         QList<DataBase::tweetsData> tweets;
-        tweets = db->getTimeline(userData.twitterID,left,right,USER_TIMELINE);
+        tweets = db->getTimeline("", userData.twitterID,left,right,USER_TIMELINE);
         QString result;
         result.append("<style>.select {font-weight: 600;} </style>");
         for(int i=0; i<tweets.count(); i++)

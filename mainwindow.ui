@@ -169,8 +169,6 @@
        <enum>Qt::ClickFocus</enum>
       </property>
      </widget>
-     <zorder>myTtwitterTimeline</zorder>
-     <zorder>verticalLayoutWidget_3</zorder>
     </widget>
     <widget class="QWidget" name="virtualTimeLine">
      <attribute name="title">
@@ -290,6 +288,32 @@
      </item>
     </layout>
    </widget>
+   <widget class="QLabel" name="syncLabel">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>47</width>
+      <height>13</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>sylcLabel</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="syncText">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>47</width>
+      <height>13</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Синхронизация....</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -302,6 +326,12 @@
    </property>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
+   <property name="movable">
+    <bool>true</bool>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>

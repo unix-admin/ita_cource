@@ -7,7 +7,8 @@
 #include <QTimer>
 #include <QThread>
 #include <QMainWindow>
-
+#include <QMovie>
+#include <QTime>
 #include "twitter.h"
 #include "setpin.h"
 #include "autorize.h"
@@ -38,9 +39,13 @@ private:
     int leftLimit;
     int rightLimit;
     int pages;
+    QMovie sync;
+    QTime lastSynchronization;
+    QPixmap userPhoto;
+    QString lastMyTweet;
+    QString lastMyVirtualTweet;
 private slots:
     void buttonClicked();
-
     void networkConnection();
     void networkError();
     void networkOk();
@@ -55,10 +60,13 @@ private slots:
     void getNewUserData();
     void moved();
     void myUserClicked();
-
+    void syncNeeded();
+    void syncFinished();
+    void updateData();
 private:
     void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;
-    QString getVirtualTimeLine(int left, int right);
+    QString getTimeLine(int left, int right, QString maxTweetID, int type);
+    void paintElements();
 
 };
 

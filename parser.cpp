@@ -1,6 +1,6 @@
 #include "parser.h"
 #include <QDebug>
-
+#include "database.h"
 
 Parser::Parser()
 {
@@ -144,5 +144,26 @@ QString Parser::dateFormat(QVariant value)
     result.replace("Dec","Дек");
     return result;
 }
+
+DataBase::userData Parser::userinfo(QByteArray *data)
+{
+    DataBase::userData result;
+    QMap<QString,QVariant> userInfo;
+
+    userInfo = QJsonDocument::fromJson(*data).toVariant().toMap();
+    result.twitterID = userInfo.find("id").value().toString();
+    result.name = userInfo.find("name").value().toString();
+    result.screen_name = userInfo.find("screen_name").value().toString();
+    result.description = userInfo.find("description").value().toString();
+    result.statuses_count = userInfo.find("statuses_count").value().toString();
+    result.friends_count = userInfo.find("friends_count").value().toString();
+    result.followers_count = userInfo.find("followers_count").value().toString();
+    result.profile_image_url = userInfo.find("profile_image_url").value().toString().replace("_normal","_reasonably_small");
+    Requests *imageDownload = new Requests;
+    result.profile_image_data = imageDownload->getImage(QUrl(result.profile_image_url));
+    return result;
+}
+
+
 
 

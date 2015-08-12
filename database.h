@@ -73,11 +73,14 @@ public:
     void updateNewUserData(QString parameter, userData *data);
     void addReadableUser(userData *data, QString senderID, queryTypes typeQuery);
     void insertTweetsToDatabase(tweetsData *dataToInsert);
-    QList<tweetsData> getTimeline(QString userID, int leftLimit, int rightLimit, queryTypes type);
+    QList<tweetsData> getTimeline(QString maxTweetID, QString userID, int leftLimit, int rightLimit, queryTypes type);
     void deleteUser(QString twitterID, QString readerID);
-    int countRecordsInVirtualTimeLine(QString userID);
+    int countRecordsInVirtualTimeLine(QString userID, QString maxTweetID);
     int countReadableUsers(QString userID);
+    void updateUserData(QString twitterID, QString parameter, QVariant value);
     QList<userData> getReadableUsers(QString userID);
+    QStringList getUsersForSync(QString userID);
+    QString getLastTweetID(QString twitterID);
 
 private:
     static DataBase * p_instance;

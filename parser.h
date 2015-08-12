@@ -23,6 +23,9 @@ public:
     QStringList parseUserInfo(QByteArray *data);
     QList<QVariant> parseTweetsToDatabase(QByteArray *data);
     QString dateFormat(QVariant value);
+    DataBase::userData userinfo(QByteArray *data);
+    QList<DataBase::tweetsData> tweets (QByteArray *data);
+
 signals:
     parseFinished();
 public slots:

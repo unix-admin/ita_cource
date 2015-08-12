@@ -3,7 +3,7 @@
 #include <QFile>
 #include <QScrollBar>
 #include "readableusers.h"
-#include <QSslSocket>
+#include "synchronization.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -20,8 +20,15 @@ MainWindow::MainWindow(QWidget *parent) :
     QTimer *timer = new QTimer;
     timer->start(20000);
     connect(timer,SIGNAL(timeout()), this, SLOT(networkConnection()));
+    sync.setFileName(":/data/images/loading_small.gif");
+    ui->syncLabel->setMovie(&sync);
+    sync.start();
+    ui->syncLabel->setVisible(false);
+    ui->syncText->setVisible(false);
     ui->statusBar->insertPermanentWidget(0, ui->netImg ,0 );
     ui->statusBar->insertPermanentWidget(0, ui->netText ,0 );
+    ui->statusBar->addWidget(ui->syncLabel);
+    ui->statusBar->addWidget(ui->syncText);
     ui->pushButton->setEnabled(false);
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(buttonClicked()));    
     connect(ui->myTtwitterTimeline,SIGNAL(textChanged()),this, SLOT(splashInvisible()));
@@ -150,7 +157,7 @@ void MainWindow::settingsShow()
 
 void MainWindow::userShow()
 {
-    QPixmap userPhoto;
+
     if (data.id=="")
      data = db->getData(ui->comboBox->currentText(),BY_NAME);
     tw->setUserData(data);
@@ -158,17 +165,9 @@ void MainWindow::userShow()
     Requests *request = new Requests;
     Parser *dataParser = new Parser;
     QByteArray userData = request->getRequest(GET_USER,"screen_name="+data.screen_name.toStdString(),"",tw);
-    QStringList myDada = dataParser->parseUserInfo(&userData);
-    ui->username->setText( data.name);
-    ui->displayname->setText( data.screen_name);
-    ui->description->setText( data.description);
-    ui->tweets->setText("Твиты: "+ data.statuses_count);
-    ui->friends->setText("Друзья: "+ data.friends_count);
-    ui->followers->setText("Читатели: "+ data.followers_count);
-    userPhoto.loadFromData( data.profile_image_data);
-    ui->photo->setPixmap(userPhoto);
-    userData = request->getRequest(GET_HOME_TIMELINE,"","",tw);
-    ui->myTtwitterTimeline->setText(dataParser->parseTweets(&userData));
+    QStringList myDada = dataParser->parseUserInfo(&userData);    
+    paintElements();
+    ui->myTtwitterTimeline->setText(getTimeLine(0,100,"",0));
     ui->verticalLayoutWidget_3->setVisible(false);
     ui->formLayoutWidget->setVisible(true);
     ui->tweetSearchButton->setVisible(true);
@@ -176,8 +175,20 @@ void MainWindow::userShow()
     ui->verticalLayoutWidget->setVisible(true);
     ui->horizontalLayoutWidget->setVisible(true);
     ui->tabWidget->setVisible(true);
-    pages = db->countRecordsInVirtualTimeLine(data.id);
-    ui->myVirtualTimeline->setText(getVirtualTimeLine(leftLimit,rightLimit));
+    pages = db->countRecordsInVirtualTimeLine(data.id,"");
+    ui->myVirtualTimeline->setText(getTimeLine(leftLimit,rightLimit,"",1));
+    lastMyTweet = db->getLastTweetID(data.twitterID);
+    lastMyVirtualTweet = db->getLastTweetID("");
+    ui->syncLabel->setVisible(true);
+    ui->syncText->setVisible(true);
+    lastSynchronization = QTime::currentTime();
+    tw->setLastSyncTime(lastSynchronization);
+    Synchronization *sync = new Synchronization;
+    connect(sync,SIGNAL(synchronizationFinished()), this, SLOT(syncFinished()));
+    sync->startSynchronization(data.id, data.twitterID);
+    QTimer *syncTimer = new QTimer;
+    syncTimer->start(tw->getUserSettings()->refreshTime.toInt()*60000);
+    connect(syncTimer,SIGNAL(timeout()), this, SLOT(syncNeeded()));
     delete request;
     delete dataParser;
 }
@@ -208,7 +219,7 @@ void MainWindow::moved()
     {   leftLimit +=100;
         rightLimit+=100;
         if (rightLimit < pages)
-            ui->myVirtualTimeline->append(getVirtualTimeLine(leftLimit,rightLimit));
+            ui->myVirtualTimeline->append(getTimeLine(leftLimit,rightLimit,"",1));
     }
 }
 
@@ -219,21 +230,109 @@ void MainWindow::myUserClicked()
 
 }
 
+void MainWindow::syncNeeded()
+{
+    lastMyTweet = db->getLastTweetID(data.twitterID);
+    lastMyVirtualTweet = db->getLastTweetID("");
+    ui->syncLabel->setVisible(true);
+    ui->syncText->setVisible(true);
+    Synchronization *sync = new Synchronization;
+    connect(sync,SIGNAL(synchronizationFinished()), this, SLOT(syncFinished()));
+    sync->startSynchronization(data.id,data.twitterID);
+
+}
+
+void MainWindow::syncFinished()
+{
+    ui->syncLabel->setVisible(false);
+    ui->syncText->setVisible(false);    
+    Synchronization *sync = qobject_cast<Synchronization *>(sender());
+    tw->setSyncedUsers(sync->getUpdatedUsers());
+    tw->setSyncedTimelines(sync->getUpdatedTimelines());
+    tw->setLastSyncTime(QTime::currentTime());
+    delete sync;
+    updateData();
+}
+
+void MainWindow::updateData()
+{
+    QStringList syncUserData;
+    QStringList syncTimelines;
+    if (lastSynchronization  != tw->getLastSyncTime())
+    {
+        syncTimelines =  tw->getSyncedTimelines();
+        syncUserData = tw->getSyncedUsers();
+        if (syncUserData.count() > 0)
+        {
+            for (int i=0; i<syncUserData.count(); i++)
+            {
+                if (syncUserData.at(i) == data.twitterID)
+                {
+                    DataBase::userData dataToSync = db->getData(data.id,BY_ID);
+                    data.name = dataToSync.name;
+                    data.screen_name = dataToSync.screen_name;
+                    data.description = dataToSync.description;
+                    data.profile_image_data = dataToSync.profile_image_data;
+                    data.statuses_count = dataToSync.statuses_count;
+                    data.friends_count = dataToSync.friends_count;
+                    data.followers_count = dataToSync.followers_count;
+                    paintElements();
+                }
+            }
+        }
+        if (syncTimelines.count() > 0)
+        {
+            for (int i=0; i<syncTimelines.count(); i++)
+            {
+                if (syncTimelines.at(i) == data.twitterID)
+                {
+                    int scrollbarvalue;
+                    scrollbarvalue = ui->myTtwitterTimeline->verticalScrollBar()->value();
+                    QString previousText = ui->myTtwitterTimeline->toHtml();
+                    ui->myTtwitterTimeline->setText(getTimeLine(0,100,lastMyTweet,0)+previousText);
+                    ui->myTtwitterTimeline->verticalScrollBar()->setValue(scrollbarvalue);
+                }
+            }
+        }
+        lastSynchronization = tw->getLastSyncTime();
+    }
+}
+
 void MainWindow::closeEvent(QCloseEvent *)
 {
 
     QApplication::exit();
 }
 
-QString MainWindow::getVirtualTimeLine(int left,int right)
+QString MainWindow::getTimeLine(int left,int right, QString maxTweetID, int type)
 {
     QList<DataBase::tweetsData> tweets;
-    tweets = db->getTimeline(data.id,left,right,VIRTUAL_TIMELINE);
+    if (type == 1)
+        tweets = db->getTimeline(maxTweetID, data.id,left,right,VIRTUAL_TIMELINE);
+    else
+        tweets = db->getTimeline(maxTweetID, data.twitterID,left,right,USER_TIMELINE);
     QString result;
     result.append("<style>.select {font-weight: 600;} </style>");
     for(int i=0; i<tweets.count(); i++)
     {
-        result.append("<span class=\"select\">"+tweets.at(i).tweetTime+" "+tweets.at(i).username + "</span>:" +tweets.at(i).text+";<br>");
+        if( i<tweets.count()-1)
+            result.append("<span class=\"select\">"+tweets.at(i).tweetTime+" "+tweets.at(i).username + "</span>:" +tweets.at(i).text+";<br>");
+        else
+            result.append("<span class=\"select\">"+tweets.at(i).tweetTime+" "+tweets.at(i).username + "</span>:" +tweets.at(i).text+";");
+
+
     }
     return result;
+}
+
+void MainWindow::paintElements()
+{
+    ui->username->setText( data.name);
+    ui->displayname->setText( data.screen_name);
+    ui->description->setText( data.description);
+    ui->tweets->setText("Твиты: "+ data.statuses_count);
+    ui->friends->setText("Друзья: "+ data.friends_count);
+    ui->followers->setText("Читатели: "+ data.followers_count);
+    userPhoto.loadFromData( data.profile_image_data);
+    ui->photo->setPixmap(userPhoto);
 }

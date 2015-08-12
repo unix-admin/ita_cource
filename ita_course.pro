@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     requests.cpp \
     database.cpp \
     settings.cpp \
-    readableusers.cpp
+    readableusers.cpp \
+    synchronization.cpp
 
 HEADERS  += mainwindow.h \
     base64.h \
@@ -47,7 +48,8 @@ HEADERS  += mainwindow.h \
     requests.h \
     database.h \
     settings.h \
-    readableusers.h
+    readableusers.h \
+    synchronization.h
 
 FORMS    += mainwindow.ui \
     setpin.ui \

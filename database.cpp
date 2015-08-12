@@ -151,11 +151,14 @@ void DataBase::insertTweetsToDatabase(DataBase::tweetsData *dataToInsert)
     disconnect();
 }
 
-QList<DataBase::tweetsData> DataBase::getTimeline(QString userID, int leftLimit, int rightLimit,queryTypes type)
+QList<DataBase::tweetsData> DataBase::getTimeline(QString maxTweetID, QString userID, int leftLimit, int rightLimit,queryTypes type)
 {
     QList<tweetsData> result;
     tweetsData queryResult;
     QString leftLimitData;
+    QString appendCondition;
+    if (maxTweetID != "")
+        appendCondition = " AND tweets.tweetID >"+maxTweetID;
     QString rightLimitData = QString::number(rightLimit);
     connect();
     QSqlQuery getTimelineQuery;
@@ -175,13 +178,13 @@ QList<DataBase::tweetsData> DataBase::getTimeline(QString userID, int leftLimit,
         break;
     case VIRTUAL_TIMELINE:
     {   queryString = "SELECT tweets.tweetTime, tweets.username, tweets.text FROM tweets, users, readableUsers " \
-                      "WHERE tweets.userID=readableUsers.twitterID AND readableUsers.userID = users.userID AND users.userID="+userID\
+                      "WHERE tweets.userID=readableUsers.twitterID AND readableUsers.userID = users.userID AND users.userID="+userID +appendCondition \
                       +" ORDER BY tweets.tweetID DESC LIMIT "+leftLimitData+rightLimitData;
         break;
     }
     case USER_TIMELINE:
     {
-        queryString = "SELECT tweets.tweetTime, tweets.username, tweets.text FROM tweets WHERE tweets.userID="+userID\
+        queryString = "SELECT tweets.tweetTime, tweets.username, tweets.text FROM tweets WHERE tweets.userID="+userID+ appendCondition \
                       +" ORDER BY tweets.tweetID DESC LIMIT "+leftLimitData+rightLimitData;
         break;
     }
@@ -227,12 +230,15 @@ void DataBase::deleteUser(QString twitterID, QString readerID)
     disconnect();
 }
 
-int DataBase::countRecordsInVirtualTimeLine(QString userID)
+int DataBase::countRecordsInVirtualTimeLine(QString userID, QString maxTweetID)
 {
     int result;
     connect();
+    QString appendCondition;
+    if (maxTweetID != "")
+        appendCondition = " AND tweets.tweetID >"+maxTweetID;
     QString queryString = "SELECT count() FROM tweets, users, readableUsers " \
-                          "WHERE tweets.userID=readableUsers.twitterID AND readableUsers.userID = users.userID AND users.userID="+userID;
+                          "WHERE tweets.userID=readableUsers.twitterID AND readableUsers.userID = users.userID AND users.userID="+userID+ appendCondition;
     QSqlQuery countRecordsInVirtualTimeLineQuery;
     countRecordsInVirtualTimeLineQuery.prepare(queryString);
     countRecordsInVirtualTimeLineQuery.exec();
@@ -263,6 +269,26 @@ int DataBase::countReadableUsers(QString userID)
   return result;
 }
 
+void DataBase::updateUserData(QString twitterID, QString parameter, QVariant value)
+{
+    connect();
+    QSqlQuery updateUserDataQuery;
+    if (parameter !="image")
+    {
+        QString queryString = "UPDATE users SET " + parameter+"=\""+value.toString()+"\" WHERE twitterID="+twitterID;
+        updateUserDataQuery.prepare(queryString);
+    }
+    else
+    {
+        QString queryString = "UPDATE users SET image=:image WHERE twitterID="+twitterID;
+        updateUserDataQuery.prepare(queryString);
+        updateUserDataQuery.addBindValue(value.toByteArray());
+    }
+    updateUserDataQuery.exec();
+    updateUserDataQuery.finish();
+    disconnect();
+}
+
 QList<DataBase::userData> DataBase::getReadableUsers(QString userID)
 {
     QList<DataBase::userData> result;
@@ -280,6 +306,37 @@ QList<DataBase::userData> DataBase::getReadableUsers(QString userID)
     disconnect();
     return result;
 
+}
+
+QStringList DataBase::getUsersForSync(QString userID)
+{
+    connect();
+    QStringList result;
+    QSqlQuery getUsersForSyncQuery("SELECT twitterID FROM readableUsers WHERE userID="+userID);
+    while (getUsersForSyncQuery.next()) {
+        result.append(getUsersForSyncQuery.value(0).toString());
+    }
+    disconnect();
+    return result;
+}
+
+QString DataBase::getLastTweetID(QString twitterID)
+{
+    connect();
+    QString result;
+    QSqlQuery getLastTweetIDQuery;
+    QString getLastTweetID;
+    if (twitterID == "")
+        getLastTweetID = "SELECT tweetID FROM tweets ORDER BY tweetID DESC LIMIT 1";
+    else
+        getLastTweetID = ("SELECT tweetID FROM tweets WHERE userID="+twitterID+" ORDER BY tweetID DESC LIMIT 1");
+    getLastTweetIDQuery.prepare(getLastTweetID);
+    getLastTweetIDQuery.exec();
+    getLastTweetIDQuery.first();
+        result = getLastTweetIDQuery.value(0).toString();
+
+    disconnect();
+    return result;
 }
 
 

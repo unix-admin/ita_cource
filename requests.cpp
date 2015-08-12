@@ -67,8 +67,8 @@ QByteArray Requests::getImage(QUrl requestURL)
 
 void Requests::replyFinished()
 {
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-    if (reply->error() == QNetworkReply::NoError)
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());    
+    if ((reply->error() == QNetworkReply::NoError)|| (reply->errorString().contains("ssl")))
       {
         std::string request = reply->readAll().toStdString();
         if (request[0] == '[')

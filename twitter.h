@@ -13,7 +13,7 @@
 #include <QTextEdit>
 #include <QEventLoop>
 #include "database.h"
-
+#include <QTime>
 class Twitter : public QObject
 {
     Q_OBJECT
@@ -36,6 +36,13 @@ public:
     void setUserSettings(DataBase::userSettings settings);
     DataBase::userData *getUserData();
     DataBase::userSettings *getUserSettings();
+    void setSyncedUsers(QStringList syncUsers);
+    void setSyncedTimelines(QStringList syncTimelines);
+    void setLastSyncTime(QTime time);
+    QStringList getSyncedUsers();
+    QStringList getSyncedTimelines();
+    QTime getLastSyncTime();
+
 struct requestParamerers{
     QByteArray name;
     QByteArray value;
@@ -68,6 +75,10 @@ private :
           QTextEdit *returnText;
           DataBase::userData userData;
           DataBase::userSettings userSettings;
+          QStringList syncedUsers;
+          QStringList syncedTimelines;
+          QTime LastSync;
+
 
 };
 

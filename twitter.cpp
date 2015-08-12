@@ -94,6 +94,37 @@ DataBase::userSettings *Twitter::getUserSettings()
     return &userSettings;
 }
 
+void Twitter::setLastSyncTime(QTime time)
+{
+    LastSync = time;
+}
+
+QStringList Twitter::getSyncedUsers()
+{
+    return syncedUsers;
+}
+
+QStringList Twitter::getSyncedTimelines()
+{
+    return syncedTimelines;
+}
+
+QTime Twitter::getLastSyncTime()
+{
+    return LastSync;
+}
+
+void Twitter::setSyncedUsers(QStringList syncUsers)
+{
+
+    syncedUsers = syncUsers;
+}
+
+void Twitter::setSyncedTimelines(QStringList syncTimelines)
+{
+    syncedTimelines = syncTimelines;
+}
+
 void Twitter::fin()
 {
     qDebug()<< "Finished";
