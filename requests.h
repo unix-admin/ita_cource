@@ -29,12 +29,12 @@ class Requests :public QObject
 
 public:
     Requests();
-    QByteArray getRequest(requestType type, std::string parameters, std::string parameters2, Twitter *clsTwitter);
+    QByteArray getRequest(requestType type, std::string parameters, std::string parameters2);
     QByteArray getImage(QUrl requestURL);
 
 private:
     QByteArray requestResult;
-
+    Twitter *twitter;
 private slots:
     void replyFinished();
     void managerFinished();

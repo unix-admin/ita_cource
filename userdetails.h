@@ -35,21 +35,24 @@ private:
     QString id;
     QPixmap photo;
     DataBase *db;
-    DataBase::userData userData;
+    Twitter::userData userData;
     Requests *twitterRequests;
     Parser *parser;
     QByteArray requestData;
     QString userTimeline;
     bool userInDatabase;
-    int pages;
+    int page;
     int currentPage;
-
+    QTimer *syncTimer;
+    QTime lastSynchronization;
+    QString lastTweet;
 private:
     void getUserinfoFromTwitter(std::string id);
     void getUserinfoFromDatabase(QString id);
-    QString getTimeline(int left, int right);
+    QString getTimeline(int left, int right, QString userLastTweet);
     void timeLineToDatabase();
     void showResults();
+    bool databaseUser;
     void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;
 
 signals:
@@ -58,6 +61,7 @@ signals:
 private slots:
     void toDatabase();
     void appendTimeline();
+    void updateData();
 };
 
 #endif // USERDETAILS_H

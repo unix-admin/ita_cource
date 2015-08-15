@@ -19,10 +19,10 @@ UserSearch::UserSearch(QWidget *parent) :
     this->resize(this->geometry().width(),this->geometry().height()-500);
 }
 
-void UserSearch::getTwitterClass(Twitter *clsTwitter)
+void UserSearch::getTwitterClass()
 {
-    twitter = clsTwitter;
-    userSearchResultsByPage = clsTwitter->getUserSettings()->searchUsersByPage.toInt();
+    twitter = Twitter::getcls();
+    userSearchResultsByPage = twitter->getUserSettings()->searchUsersByPage.toInt();
     QVBoxLayout *searchArea = new QVBoxLayout(ui->scrollArea);
     for (int i=0; i< userSearchResultsByPage; i++)
     {

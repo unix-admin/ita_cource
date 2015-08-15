@@ -1,11 +1,9 @@
 #include "tweetssearch.h"
 #include "ui_tweetssearch.h"
-
 TweetsSearch::TweetsSearch(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::TweetsSearch)
-{
-    clsParser = new Parser;
+{    
     ui->setupUi(this);
 }
 
@@ -16,93 +14,72 @@ TweetsSearch::~TweetsSearch()
     delete ui;
 }
 
-void TweetsSearch::prepare(Twitter *clsTwitter)
+void TweetsSearch::prepare()
 {
-    twitter = clsTwitter;
+    twitter = Twitter::getcls();
+    clsParser = new Parser;
     ui->loadProgress->setVisible(false);
-    ui->searchedResults->setReadOnly(true);
+    ui->results->setReadOnly(true);
     connect(ui->searchButton,SIGNAL(clicked(bool)),this,SLOT(startSearch()));
     connect(ui->next,SIGNAL(clicked(bool)),this,SLOT(nextResults()));
     connect(ui->previous,SIGNAL(clicked(bool)),this,SLOT(previousResults()));
     movie = new QMovie(":/data/images/loading.gif");    
     ui->loadProgress->setMovie(movie);
     nextResultsParameters = "";
+    next = false;
     show();
 }
 
 void TweetsSearch::startSearch()
 {
-      metadata = new QStringList;
-      ui->searchedResults->clear();
-      showLoadingImage(ON);
-      Requests *twitterRequest = new Requests;      
-      QByteArray request;
-      QStringList results;
-      request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count=100",twitter);
-      results = clsParser->parseSearchRequest(&request);
-      metadata->append(results.at(0));
-      metadata->append(results.at(1));
-      metadata->append(results.at(2));
-      metadata->append(results.at(3));
-      metadata->append(results.at(4));
-      showLoadingImage(OFF);
-      ui->searchedResults->setHtml(results.at(2));
-      delete twitterRequest;
 
-}
-
-void TweetsSearch::tweetSearchFinished()
-{   
-}
-
-void TweetsSearch::replyFinished()
-{
-
+        showLoadingImage(ON);
+        QString tweets;        
+        Requests *twitterRequest = new Requests;
+        QByteArray request;
+        request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count=100");
+        tweets = clsParser->parseTweets(&request);
+        maxTweet = clsParser->maxTweetID;
+        minTweet = clsParser->minTweetID;        
+        delete twitterRequest;
+        ui->results->setText(tweets);
+        scroolPosition = ui->results->verticalScrollBar()->value();
+        showLoadingImage(OFF);
 }
 
 void TweetsSearch::nextResults()
 {
-    ui->searchedResults->clear();
+    ui->results->clear();
     showLoadingImage(ON);
+    QString tweets;
     Requests *twitterRequest = new Requests;
     QByteArray request;
-    QStringList results;
-    request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count=100&max_id="+metadata->at(3).toStdString(),twitter);
-    qDebug() << metadata->at(0);
-    delete metadata;
-    metadata = new QStringList;
-    results = clsParser->parseSearchRequest(&request);
-    metadata->append(results.at(0));
-    metadata->append(results.at(1));
-    metadata->append(results.at(2));
-    metadata->append(results.at(3));
-    metadata->append(results.at(4));
+    request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count=100&max_id="+minTweet.toStdString());
+    qDebug() << minTweet;
+    tweets = clsParser->parseTweets(&request);
+    maxTweet = clsParser->maxTweetID;
+    minTweet = clsParser->minTweetID;
     showLoadingImage(OFF);
-    ui->searchedResults->setHtml(results.at(2));
+    ui->results->setText(tweets);
     delete twitterRequest;
 
 }
 
 void TweetsSearch::previousResults()
 {
-    ui->searchedResults->clear();
+    ui->results->clear();
     showLoadingImage(ON);
+    QString tweets;
     Requests *twitterRequest = new Requests;
     QByteArray request;
-    QStringList results;
-    request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count=100&since_id="+metadata->at(3).toStdString(),twitter);
-    qDebug() << metadata->at(0);
-    delete metadata;
-    metadata = new QStringList;
-    results = clsParser->parseSearchRequest(&request);
-    metadata->append(results.at(0));
-    metadata->append(results.at(1));
-    metadata->append(results.at(2));
-    metadata->append(results.at(3));
-    metadata->append(results.at(4));
-    showLoadingImage(OFF);
-    ui->searchedResults->setHtml(results.at(2));
+    request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count=100&since_id="+maxTweet.toStdString());
+    qDebug() << minTweet;
+    tweets = clsParser->parseTweets(&request);
+    maxTweet = clsParser->maxTweetID;
+    minTweet = clsParser->minTweetID;
+    ui->results->setText(tweets);
     delete twitterRequest;
+    showLoadingImage(OFF);
 }
 
 void TweetsSearch::showLoadingImage(loadingImage signal)

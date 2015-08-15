@@ -35,7 +35,7 @@ private:
     Twitter *tw;
     bool netError;
     DataBase *db;
-    DataBase::userData data;
+    Twitter::userData data;
     int leftLimit;
     int rightLimit;
     int pages;

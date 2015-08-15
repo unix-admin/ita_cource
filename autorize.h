@@ -23,7 +23,7 @@ public:
     explicit autorize(QWidget *parent = 0);
 
     ~autorize();
-    void getAutorisation(Twitter *pTwitter);
+    void getAutorisation();
 private:
     void urlChange(QUrl url);
     void showPinWindow();
@@ -32,8 +32,12 @@ private:
 private:
     Ui::autorize *ui;
     Twitter *clsTwitter;
+    DataBase *db;
 private slots:
     void changeUrl();
+
+signals:
+    formClosed();
 };
 
 #endif // AUTORIZE_H

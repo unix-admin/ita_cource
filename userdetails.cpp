@@ -4,16 +4,19 @@
 #include <QLayout>
 #include <QLabel>
 #include <QScrollBar>
-
+#include <QThread>
 UserDetails::UserDetails(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::UserDetails)
 {
+    databaseUser = false;
     ui->setupUi(this);
+    ui->progressBar->setVisible(false);
 }
 
 UserDetails::~UserDetails()
 {
+    delete db;
     delete twitterRequests;
     delete parser;
     delete ui;
@@ -21,7 +24,7 @@ UserDetails::~UserDetails()
 
 void UserDetails::prepareData(QString userid)
 {
-    db = DataBase::getInstance();
+    db = new DataBase;
     id = userid;
     twitter = Twitter::getcls();
     twitterRequests = new Requests;
@@ -35,8 +38,7 @@ void UserDetails::prepareData(QString userid)
     movie->start();
     connect(ui->buttonToDatabase,SIGNAL(clicked(bool)),this, SLOT(toDatabase()));
     connect(ui->userTimeline->verticalScrollBar(),SIGNAL(valueChanged(int)),this, SLOT(appendTimeline()));
-    currentPage = 0;
-    pages = 100;
+    currentPage = 0;    
     this->resize(200,200);
     this->show();
     userInDatabase = db->checkUser(userid,BY_TWITTER_ID);
@@ -46,6 +48,7 @@ void UserDetails::prepareData(QString userid)
     }
     else
     {
+        databaseUser = true;
         getUserinfoFromDatabase(id);
     }
 
@@ -55,7 +58,7 @@ void UserDetails::prepareData(QString userid)
 void UserDetails::getUserinfoFromTwitter(std::string id)
 {
     QStringList userInfo;
-    requestData = twitterRequests->getRequest(GET_USER_BY_ID,id,"",twitter);
+    requestData = twitterRequests->getRequest(GET_USER_BY_ID,id,"");
     userInfo = parser->parseUserInfo(&requestData);
     userData.twitterID = userInfo.value(0);
     userData.name = userInfo.value(1);
@@ -66,45 +69,46 @@ void UserDetails::getUserinfoFromTwitter(std::string id)
     userData.followers_count = userInfo.value(6);
     userData.profile_image_url = userInfo.value(7);
     userData.profile_image_data = twitterRequests->getImage(userInfo.value(7));
-    requestData = twitterRequests->getRequest(GET_USER_TIMELINE,id,"&count="+twitter->getUserSettings()->timelineTweetsByPage.toStdString()+"&page=1",twitter);
+    requestData = twitterRequests->getRequest(GET_USER_TIMELINE,id,"&count="+twitter->getUserSettings()->timelineTweetsByPage.toStdString()+"&page=1");
     userTimeline = parser->parseTweets(&requestData);
-    ui->userTimeline->setText(userTimeline);
-    if (userData.statuses_count.toInt()%twitter->getUserSettings()->timelineTweetsByPage.toInt() > 0)
-    {
-        pages = userData.statuses_count.toInt()/twitter->getUserSettings()->timelineTweetsByPage.toInt()+1;
-    }
-    else
-    {
-        pages = userData.statuses_count.toInt()/twitter->getUserSettings()->timelineTweetsByPage.toInt()+1;
-    }
+    ui->userTimeline->setText(userTimeline);    
     showResults();
 }
 
 void UserDetails::getUserinfoFromDatabase(QString id)
 {
     userData = db->getData(id,BY_TWITTER_ID);
-    ui->userTimeline->setText(getTimeline(0,100));
+    ui->userTimeline->setText(getTimeline(0,100,""));
+    page=1;
     if(db->checkReadableUser(twitter->getUserData()->id,userData.twitterID))
         ui->buttonToDatabase->setVisible(false);
+    syncTimer = new QTimer;
+    connect(syncTimer,SIGNAL(timeout()),this,SLOT(updateData()));
+    syncTimer->start(30000);
     showResults();
 
 }
 
-QString UserDetails::getTimeline(int left, int right)
+QString UserDetails::getTimeline(int left, int right, QString userLastTweet)
 {
-        QList<DataBase::tweetsData> tweets;
-        tweets = db->getTimeline("", userData.twitterID,left,right,USER_TIMELINE);
+        QList<Twitter::tweetsData> tweets;
+        lastTweet = db->getLastTweetID(userData.twitterID);
+        tweets = db->getTimeline(userLastTweet, userData.twitterID,left,right,USER_TIMELINE);
         QString result;
         result.append("<style>.select {font-weight: 600;} </style>");
         for(int i=0; i<tweets.count(); i++)
         {
-            result.append("<span class=\"select\">"+tweets.at(i).tweetTime+" "+tweets.at(i).username + "</span>:" +tweets.at(i).text+";<br>");
+            if (i==tweets.count()-1)
+            {
+                result.append("<span class=\"select\">"+tweets.at(i).tweetTime+" "+tweets.at(i).username + "</span>:" +tweets.at(i).text+";");
+            }
+            else
+            {
+                result.append("<span class=\"select\">"+tweets.at(i).tweetTime+" "+tweets.at(i).username + "</span>:" +tweets.at(i).text+";<br>");
+            }
         }
         return result;
 }
-
-
-
 
 void UserDetails::toDatabase()
 {
@@ -118,45 +122,126 @@ void UserDetails::toDatabase()
         timeLineToDatabase();
      }
     ui->buttonToDatabase->setVisible(false);
-
-
 }
 
 void UserDetails::appendTimeline()
 {
-   if (ui->userTimeline->verticalScrollBar()->value()== ui->userTimeline->verticalScrollBar()->maximum())
-   {
-        if (!(currentPage > pages))
+    if (databaseUser)
+    {
+        if (ui->userTimeline->verticalScrollBar()->value()== ui->userTimeline->verticalScrollBar()->maximum())
         {
-            currentPage++;
-            requestData = twitterRequests->getRequest(GET_USER_TIMELINE,id.toStdString(),"&count="+twitter->getUserSettings()->timelineTweetsByPage.toStdString() \
-                                   +"&page="+QString::number(currentPage).toStdString(),twitter);
-            userTimeline = parser->parseTweets(&requestData);
-            ui->userTimeline->append(userTimeline);
+            page++;
+            ui->userTimeline->append(getTimeline(page*100,page*100+100,""));
         }
+    }
+    else
+    {
+        QString  minTweetID;
+       if (ui->userTimeline->verticalScrollBar()->value()== ui->userTimeline->verticalScrollBar()->maximum())
+       {
+                minTweetID = parser->minTweetID;
+                requestData = twitterRequests->getRequest(GET_USER_TIMELINE,id.toStdString(),"&count="+twitter->getUserSettings()->timelineTweetsByPage.toStdString()\
+                                                          +"&max_id="+minTweetID.toStdString());
+                userTimeline = parser->parseTweets(&requestData);
+                if (parser->minTweetID !=minTweetID)
+                ui->userTimeline->append(userTimeline);
+       }
+    }
+}
+
+void UserDetails::updateData()
+{
+    QStringList syncUserData;
+    QStringList syncTimelines;
+    if (lastSynchronization  != twitter->getLastSyncTime())
+    {
+        syncTimelines =  twitter->getSyncedTimelines();
+        syncUserData = twitter->getSyncedUsers();
+        if (syncUserData.count() > 0)
+        {
+            for (int i=0; i<syncUserData.count(); i++)
+            {
+                if (syncUserData.at(i) == userData.twitterID)
+                {
+                    Twitter::userData dataToSync = db->getData(userData.twitterID,BY_TWITTER_ID);
+                    userData.name = dataToSync.name;
+                    userData.screen_name = dataToSync.screen_name;
+                    userData.description = dataToSync.description;
+                    userData.profile_image_data = dataToSync.profile_image_data;
+                    userData.statuses_count = dataToSync.statuses_count;
+                    userData.friends_count = dataToSync.friends_count;
+                    userData.followers_count = dataToSync.followers_count;
+                    showResults();
+                }
+            }
+        }
+        QString previousText;
+        int scrollbarvalue = 0;
+        int records = 0;
+        int pages = 0;
+        if (syncTimelines.count() > 0)
+        {
+
+            for (int i=0; i<syncTimelines.count(); i++)
+            {
+                if (syncTimelines.at(i) == userData.twitterID)
+                {
+                    records = db->countRecordsInTimeLine(userData.twitterID,lastTweet,USER_TIMELINE);
+                    if (records > 100)
+                    {
+                        if (records%100 == 0)
+                        {
+                            pages = records/100;
+                        }
+                        else
+                        {
+                            pages = records/100+1;
+                        }
+                        for(int i=0; i<pages; i++)
+                        {
+                            scrollbarvalue = ui->userTimeline->verticalScrollBar()->maximum()-ui->userTimeline->verticalScrollBar()->value();
+                            previousText = ui->userTimeline->toHtml();
+                            ui->userTimeline->setText(getTimeline(i*100,i*100+100,lastTweet)+previousText);
+                            ui->userTimeline->verticalScrollBar()->setValue(ui->userTimeline->verticalScrollBar()->maximum()-scrollbarvalue);
+                        }
+                    }
+                    else
+                    {
+                        scrollbarvalue = ui->userTimeline->verticalScrollBar()->maximum()-ui->userTimeline->verticalScrollBar()->value();
+                        previousText = ui->userTimeline->toHtml();
+                        ui->userTimeline->setText(getTimeline(0,100,lastTweet)+previousText);
+                        ui->userTimeline->verticalScrollBar()->setValue(ui->userTimeline->verticalScrollBar()->maximum()-scrollbarvalue);
+                    }
+                }
+            }
+        lastSynchronization = twitter->getLastSyncTime();
+     }
    }
 }
 
 void UserDetails::timeLineToDatabase()
 {
+
  int pages;
  QList<QVariant> tweetList;
  QMap<QString,QVariant> tweetMap;
  QMap<QString,QVariant> userMap;
- DataBase::tweetsData tweetsToDB;
+ DataBase::tweets tweetsToDB;
  QMap<QString, QVariant>::const_iterator user;
+ QList<DataBase::tweets> dataToInsert;  
  if (userData.statuses_count.toInt()%100 > 0)
     {
-        pages = userData.statuses_count.toInt()/200 +1;
+        pages = userData.statuses_count.toInt()/100 +1;
     }
  else
     {
-         pages = userData.statuses_count.toInt()/200;
+         pages = userData.statuses_count.toInt()/100;
     }
+ui->progressBar->setVisible(true);
  for(int i=0; i<pages; i++)
  {
-    requestData = twitterRequests->getRequest(GET_USER_TIMELINE,userData.twitterID.toStdString(),"&count=200&exclude_replies=false"\
-                                              "&page="+QString::number(i+1).toStdString(),twitter);
+    requestData = twitterRequests->getRequest(GET_USER_TIMELINE,userData.twitterID.toStdString(),"&count=100&include_rts=true"\
+                                              "&page="+QString::number(i+1).toStdString());
     tweetList = parser->parseTweetsToDatabase(&requestData);
     for ( int t = 0 ; t<tweetList.count(); t++)
     {
@@ -169,9 +254,16 @@ void UserDetails::timeLineToDatabase()
        user = tweetMap.find("user");
        userMap = user.value().toMap();
        tweetsToDB.username= userMap.find("screen_name").value().toString();
-       db->insertTweetsToDatabase(&tweetsToDB);
+       dataToInsert.append(tweetsToDB);       
+
+
     }
+    db->insertTweetsToDatabase(&dataToInsert);
+    ui->progressBar->setValue((i+1)*100/pages);
+    dataToInsert.clear();
  }
+  ui->progressBar->setValue(100);
+  ui->progressBar->setVisible(false);
 }
 
 void UserDetails::showResults()

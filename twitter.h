@@ -12,14 +12,52 @@
 #include <QTextDocument>
 #include <QTextEdit>
 #include <QEventLoop>
-#include "database.h"
 #include <QTime>
+#include <QSqlDatabase>
+#include <QFile>
 class Twitter : public QObject
 {
     Q_OBJECT
+
+public:
+    struct userData
+    {
+        QString id;
+        QString name;
+        QString twitterID;
+        QString accessTokenKey;
+        QString accessTokenSecret;
+        QString screen_name;
+        QString description;
+        QString statuses_count;
+        QString friends_count;
+        QString followers_count;
+        QString profile_image_url;
+        QByteArray profile_image_data;
+    };
+    struct userSettings
+    {
+        QString timelineTweetsByPage;
+        QString searchTweetsByPage;
+        QString searchUsersByPage;
+        QString searchTweetsToDatabase;
+        QString refreshTime;
+    };
+    struct tweetsData
+    {
+        QString tweetID;
+        QString tweetTime;
+        QString username;
+        QString text;
+        QString twitterUserID;
+        QString searchID;
+    };
+
+
 private:
     static Twitter *instance;
 public:
+
     static Twitter *getcls() {
             if(!instance)
                 instance = new Twitter();
@@ -32,17 +70,23 @@ public:
     void setPin(std::string PIN);
     void setAccessToken(std::string response);    
     QUrl generateQueryString(std::string url, std::string parameters);
-    void setUserData(DataBase::userData data);
-    void setUserSettings(DataBase::userSettings settings);
-    DataBase::userData *getUserData();
-    DataBase::userSettings *getUserSettings();
+    void setUserData(userData data);
+    void setUserSettings(userSettings settings);
+    userData *getUserData();
+    userSettings *getUserSettings();
     void setSyncedUsers(QStringList syncUsers);
     void setSyncedTimelines(QStringList syncTimelines);
     void setLastSyncTime(QTime time);
     QStringList getSyncedUsers();
     QStringList getSyncedTimelines();
     QTime getLastSyncTime();
-
+    QSqlDatabase getDatabase();
+    userData twitterUserData;
+    userSettings twitterUserSettings;
+    void setNetworkStatus(bool status);
+    bool getNetworkStatus();
+    bool getDatabaseStatus();
+    void setDatabaseStatus(bool status);
 struct requestParamerers{
     QByteArray name;
     QByteArray value;
@@ -73,11 +117,12 @@ private :
           QMap<QString, QVariant> *userTimeLineMap;
           QString *userTimeLine;
           QTextEdit *returnText;
-          DataBase::userData userData;
-          DataBase::userSettings userSettings;
+          bool networkStatus;
           QStringList syncedUsers;
           QStringList syncedTimelines;
           QTime LastSync;
+          QSqlDatabase twitterDB;
+          bool databaseStatus;
 
 
 };

@@ -10,6 +10,7 @@
 #include <QStringList>
 #include <QObject>
 #include "requests.h"
+#include "twitter.h"
 class Parser : public QObject
 {
     Q_OBJECT
@@ -23,8 +24,8 @@ public:
     QStringList parseUserInfo(QByteArray *data);
     QList<QVariant> parseTweetsToDatabase(QByteArray *data);
     QString dateFormat(QVariant value);
-    DataBase::userData userinfo(QByteArray *data);
-    QList<DataBase::tweetsData> tweets (QByteArray *data);
+    Twitter::userData userinfo(QByteArray *data);
+    QList<Twitter::tweetsData> tweets (QByteArray *data);
 
 signals:
     parseFinished();

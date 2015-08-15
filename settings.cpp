@@ -6,7 +6,7 @@ Settings::Settings(QWidget *parent) :
     ui(new Ui::Settings)
 {
     ui->setupUi(this);
-    settingsDB = DataBase::getInstance();
+    settingsDB = new DataBase;
     connect(ui->sliderUsertimeline, SIGNAL(valueChanged(int)),this,SLOT(changeValue()));
     connect(ui->sliderSearchedTweets, SIGNAL(valueChanged(int)),this,SLOT(changeValue()));
     connect(ui->sliderSearchedUsers, SIGNAL(valueChanged(int)),this,SLOT(changeValue()));
@@ -19,7 +19,7 @@ Settings::Settings(QWidget *parent) :
 
 Settings::~Settings()
 {
-
+    delete settingsDB;
     delete ui;
 }
 
@@ -31,7 +31,7 @@ void Settings::setUserID(QString ID)
 
 void Settings::getSettings()
 {
-    DataBase::userSettings userSettings;
+    Twitter::userSettings userSettings;
     userSettings = settingsDB->getSettings(userID);
     ui->sliderUsertimeline->setValue(userSettings.timelineTweetsByPage.toInt());
     ui->sliderSearchedTweets->setValue(userSettings.searchTweetsByPage.toInt());

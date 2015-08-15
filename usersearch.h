@@ -22,7 +22,7 @@ class UserSearch : public QWidget
 
 public:
     UserSearch(QWidget *parent = 0);
-    void getTwitterClass(Twitter *clsTwitter);
+    void getTwitterClass();
 
     ~UserSearch();
 

@@ -29,8 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->insertPermanentWidget(0, ui->netText ,0 );
     ui->statusBar->addWidget(ui->syncLabel);
     ui->statusBar->addWidget(ui->syncText);
-    ui->pushButton->setEnabled(false);
-    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(buttonClicked()));    
+    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(buttonClicked()));
     connect(ui->myTtwitterTimeline,SIGNAL(textChanged()),this, SLOT(splashInvisible()));
     connect(ui->searchButton,SIGNAL(clicked()),SLOT(userSearch()));
     connect(ui->centralWidget,SIGNAL(destroyed(QObject*)),this,SLOT(close()));
@@ -40,10 +39,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(tw,SIGNAL(finished()),this, SLOT(userShow()));
     connect(ui->myVirtualTimeline->verticalScrollBar(),SIGNAL(valueChanged(int)),this,SLOT(moved()));
     networkConnection();
-    db = DataBase::getInstance();
+    db = new DataBase;
     leftLimit=0;
-    rightLimit=100;
-    connect(db,SIGNAL(userAdded()),this,SLOT(getNewUserData()));
+    rightLimit=100;    
     ui->comboBox->insertItems(0,db->getUsers());
     ui->verticalLayoutWidget_3->setVisible(true);
     ui->horizontalLayoutWidget->setVisible(false);
@@ -56,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    delete db;
     delete ui;
 }
 
@@ -64,7 +63,9 @@ void MainWindow::buttonClicked()
     if (ui->comboBox->currentText() == "Новый пользователь")
     {
         autorize *newUser = new autorize;
-        newUser->getAutorisation(tw);
+        newUser->getAutorisation();
+        connect(newUser,SIGNAL(formClosed()),this,SLOT(getNewUserData()));
+        connect(newUser,SIGNAL(formClosed()),newUser,SLOT(deleteLater()));
     }
     else
     {
@@ -89,23 +90,23 @@ void MainWindow::networkConnection()
 
 void MainWindow::networkError()
 {
-   netError = true;
+   tw->setNetworkStatus(false);
 }
 
 void MainWindow::networkOk()
 {
-
+    tw->setNetworkStatus(true);
     if (netError)
     {
         ui->netText->setText(QString::fromStdString("Сеть недоступна"));
         ui->netImg->setPixmap(QPixmap(":/data/images/disconnected.png"));
-        ui->pushButton->setEnabled(false);
+
     }
     else
     {
         ui->netText->setText(QString::fromStdString("Сеть доступна"));
         ui->netImg->setPixmap(QPixmap(":/data/images/connected.png"));
-        ui->pushButton->setEnabled(true);
+
     }
 
 }
@@ -129,7 +130,7 @@ void MainWindow::userSearch()
 {
 
    UserSearch *userSearchForm = new UserSearch();
-   userSearchForm->getTwitterClass(tw);
+   userSearchForm->getTwitterClass();
    userSearchForm->show();
 }
 
@@ -140,8 +141,8 @@ void MainWindow::close()
 
 void MainWindow::tweetSearch()
 {
-    TweetsSearch *searchTweet = new TweetsSearch;
-    searchTweet->prepare(tw);
+    TweetsSearch *search = new TweetsSearch;
+    search->prepare();
 
 }
 
@@ -164,7 +165,7 @@ void MainWindow::userShow()
     tw->setUserSettings(db->getSettings(data.id));
     Requests *request = new Requests;
     Parser *dataParser = new Parser;
-    QByteArray userData = request->getRequest(GET_USER,"screen_name="+data.screen_name.toStdString(),"",tw);
+    QByteArray userData = request->getRequest(GET_USER,"screen_name="+data.screen_name.toStdString(),"");
     QStringList myDada = dataParser->parseUserInfo(&userData);    
     paintElements();
     ui->myTtwitterTimeline->setText(getTimeLine(0,100,"",0));
@@ -175,7 +176,7 @@ void MainWindow::userShow()
     ui->verticalLayoutWidget->setVisible(true);
     ui->horizontalLayoutWidget->setVisible(true);
     ui->tabWidget->setVisible(true);
-    pages = db->countRecordsInVirtualTimeLine(data.id,"");
+    pages = db->countRecordsInTimeLine(data.id,"",VIRTUAL_TIMELINE);
     ui->myVirtualTimeline->setText(getTimeLine(leftLimit,rightLimit,"",1));
     lastMyTweet = db->getLastTweetID(data.twitterID);
     lastMyVirtualTweet = db->getLastTweetID("");
@@ -187,8 +188,8 @@ void MainWindow::userShow()
     connect(sync,SIGNAL(synchronizationFinished()), this, SLOT(syncFinished()));
     sync->startSynchronization(data.id, data.twitterID);
     QTimer *syncTimer = new QTimer;
-    syncTimer->start(tw->getUserSettings()->refreshTime.toInt()*60000);
     connect(syncTimer,SIGNAL(timeout()), this, SLOT(syncNeeded()));
+    syncTimer->start(tw->getUserSettings()->refreshTime.toInt()*60000);
     delete request;
     delete dataParser;
 }
@@ -199,18 +200,19 @@ void MainWindow::getNewUserData()
     Requests *request = new Requests;
     Parser *dataParser = new Parser;
     data = db->getData(lastID,BY_ID);
-    QByteArray userData = request->getRequest(GET_USER,"screen_name=",data.screen_name.toStdString(),tw);
+    QByteArray userData = request->getRequest(GET_USER,"screen_name=",data.screen_name.toStdString());
     QStringList myDada = dataParser->parseUserInfo(&userData);
     data.twitterID = myDada.value(0);
     data.name = myDada.value(1);
     data.description = myDada.value(3);
-    data.statuses_count = myDada.value(4);
+    data.statuses_count = "0";
     data.friends_count = myDada.value(5);
     data.followers_count = myDada.value(6);
     data.profile_image_url = myDada.value(7);
     data.profile_image_data = request->getImage(myDada.value(7));
     connect(db, SIGNAL(workFinished()),this, SLOT(userShow()));
     db->updateNewUserData(lastID,&data);
+
 }
 
 void MainWindow::moved()
@@ -268,7 +270,7 @@ void MainWindow::updateData()
             {
                 if (syncUserData.at(i) == data.twitterID)
                 {
-                    DataBase::userData dataToSync = db->getData(data.id,BY_ID);
+                    Twitter::userData dataToSync = db->getData(data.id,BY_ID);
                     data.name = dataToSync.name;
                     data.screen_name = dataToSync.screen_name;
                     data.description = dataToSync.description;
@@ -280,18 +282,70 @@ void MainWindow::updateData()
                 }
             }
         }
+        QString previousText;
+        int scrollbarvalue = 0;
+        int records = 0;
+        int pages = 0;
         if (syncTimelines.count() > 0)
         {
+
             for (int i=0; i<syncTimelines.count(); i++)
             {
                 if (syncTimelines.at(i) == data.twitterID)
                 {
-                    int scrollbarvalue;
-                    scrollbarvalue = ui->myTtwitterTimeline->verticalScrollBar()->value();
-                    QString previousText = ui->myTtwitterTimeline->toHtml();
-                    ui->myTtwitterTimeline->setText(getTimeLine(0,100,lastMyTweet,0)+previousText);
-                    ui->myTtwitterTimeline->verticalScrollBar()->setValue(scrollbarvalue);
+                    records = db->countRecordsInTimeLine(data.twitterID,lastMyVirtualTweet,USER_TIMELINE);
+                    if (records > 100)
+                    {
+                        if (records%100 == 0)
+                        {
+                            pages = records/100;
+                        }
+                        else
+                        {
+                            pages = records/100+1;
+                        }
+                        for(int i=0; i<pages; i++)
+                        {
+                            scrollbarvalue = ui->myTtwitterTimeline->verticalScrollBar()->maximum()-ui->myTtwitterTimeline->verticalScrollBar()->value();
+                            previousText = ui->myTtwitterTimeline->toHtml();
+                            ui->myTtwitterTimeline->setText(getTimeLine(i*100,i*100+100,lastMyTweet,0)+previousText);
+                            ui->myTtwitterTimeline->verticalScrollBar()->setValue(ui->myTtwitterTimeline->verticalScrollBar()->maximum()-scrollbarvalue);
+                        }
+                    }
+                    else
+                    {
+                        scrollbarvalue = ui->myTtwitterTimeline->verticalScrollBar()->maximum()-ui->myTtwitterTimeline->verticalScrollBar()->value();
+                        previousText = ui->myTtwitterTimeline->toHtml();
+                        ui->myTtwitterTimeline->setText(getTimeLine(0,100,lastMyTweet,0)+previousText);
+                        ui->myTtwitterTimeline->verticalScrollBar()->setValue(ui->myTtwitterTimeline->verticalScrollBar()->maximum()-scrollbarvalue);
+                    }
+                }                
+            }
+            records = db->countRecordsInTimeLine(data.id,lastMyVirtualTweet,VIRTUAL_TIMELINE);
+            if (records > 100)
+            {
+                if (records%100 == 0)
+                {
+                    pages = records/100;
                 }
+                else
+                {
+                    pages = records/100+1;
+                }
+                for(int i=0; i<pages; i++)
+                {
+                    scrollbarvalue = ui->myVirtualTimeline->verticalScrollBar()->maximum()-ui->myVirtualTimeline->verticalScrollBar()->value();
+                    previousText = ui->myVirtualTimeline->toHtml();
+                    ui->myVirtualTimeline->setText(getTimeLine(i*100,i*100+100,lastMyVirtualTweet,1)+previousText);
+                    ui->myVirtualTimeline->verticalScrollBar()->setValue(ui->myVirtualTimeline->verticalScrollBar()->maximum()-scrollbarvalue);
+                }
+            }
+            else
+            {
+                scrollbarvalue = ui->myVirtualTimeline->verticalScrollBar()->maximum()-ui->myTtwitterTimeline->verticalScrollBar()->value();
+                previousText = ui->myVirtualTimeline->toHtml();
+                ui->myVirtualTimeline->setText(getTimeLine(0,100,lastMyVirtualTweet,1)+previousText);
+                ui->myVirtualTimeline->verticalScrollBar()->setValue(ui->myVirtualTimeline->verticalScrollBar()->maximum()-scrollbarvalue);
             }
         }
         lastSynchronization = tw->getLastSyncTime();
@@ -306,7 +360,7 @@ void MainWindow::closeEvent(QCloseEvent *)
 
 QString MainWindow::getTimeLine(int left,int right, QString maxTweetID, int type)
 {
-    QList<DataBase::tweetsData> tweets;
+    QList<Twitter::tweetsData> tweets;
     if (type == 1)
         tweets = db->getTimeline(maxTweetID, data.id,left,right,VIRTUAL_TIMELINE);
     else

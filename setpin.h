@@ -14,7 +14,7 @@ class setPIN : public QDialog
 public:
     explicit setPIN(QWidget *parent = 0);
     ~setPIN();
-    void getTwitter(Twitter *clsTwitter);
+    void getTwitter();
     int checkPin;
 
 private:

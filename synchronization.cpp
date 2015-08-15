@@ -2,14 +2,13 @@
 
 Synchronization::Synchronization()
 {    
-    clsDatabase = DataBase::getInstance();
+    clsDatabase = new DataBase;
     clsTwitter = Twitter::getcls();
 
 }
 
 Synchronization::~Synchronization()
-{
-    clsDatabase = 0;
+{    
     clsTwitter = 0;
     delete clsDatabase;
     delete clsTwitter;
@@ -45,12 +44,12 @@ void Synchronization::getTimeline(QString twitterUserID)
     if (clsDatabase->getLastTweetID(twitterUserID).toStdString()=="")
     {
         requestData = requestor->getRequest(GET_USER_TIMELINE,twitterUserID.toStdString(),\
-                                            "&count=200",clsTwitter);
+                                            "&count=200");
     }
     else
     {
     requestData = requestor->getRequest(GET_USER_TIMELINE,twitterUserID.toStdString(),\
-                                        "&count=200&since_id="+clsDatabase->getLastTweetID(twitterUserID).toStdString(),clsTwitter);
+                                        "&count=200&since_id="+clsDatabase->getLastTweetID(twitterUserID).toStdString());
     }
     tweets = parser->parseTweetsToDatabase(&requestData);
     delete requestor;
@@ -62,7 +61,8 @@ void Synchronization::tweetsToDatabase(QList<QVariant> *tweets, QString twitterU
 {
     QMap<QString,QVariant> tweetMap;
     QMap<QString,QVariant> userMap;
-    DataBase::tweetsData tweetsToDB;
+    DataBase::tweets tweetsToDB;
+    QList<DataBase::tweets> dataToInsert;
     QMap<QString, QVariant>::const_iterator user;
     if (tweets->count()>0)
     {
@@ -77,8 +77,9 @@ void Synchronization::tweetsToDatabase(QList<QVariant> *tweets, QString twitterU
            user = tweetMap.find("user");
            userMap = user.value().toMap();
            tweetsToDB.username= userMap.find("screen_name").value().toString();
-           clsDatabase->insertTweetsToDatabase(&tweetsToDB);
+           dataToInsert.append(tweetsToDB);
         }
+      clsDatabase->insertTweetsToDatabase(&dataToInsert);
       getTimeline(twitterUserID);
     }
 }
@@ -87,9 +88,9 @@ void Synchronization::checkUserInfo(QString twitterUserID)
 {
     requestor = new Requests;
     parser = new Parser;
-    requestData = requestor->getRequest(GET_USER_BY_ID,twitterUserID.toStdString(),"",clsTwitter);
-    DataBase::userData twitterUserInfo = parser->userinfo(&requestData);
-    DataBase::userData databaseUserInfo = clsDatabase->getData(twitterUserID,BY_TWITTER_ID);
+    requestData = requestor->getRequest(GET_USER_BY_ID,twitterUserID.toStdString(),"");
+    Twitter::userData twitterUserInfo = parser->userinfo(&requestData);
+    Twitter::userData databaseUserInfo = clsDatabase->getData(twitterUserID,BY_TWITTER_ID);
     delete requestor;
     delete parser;
     bool needUpdate = false;

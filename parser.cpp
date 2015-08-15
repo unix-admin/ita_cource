@@ -145,9 +145,9 @@ QString Parser::dateFormat(QVariant value)
     return result;
 }
 
-DataBase::userData Parser::userinfo(QByteArray *data)
+Twitter::userData Parser::userinfo(QByteArray *data)
 {
-    DataBase::userData result;
+    Twitter::userData result;
     QMap<QString,QVariant> userInfo;
 
     userInfo = QJsonDocument::fromJson(*data).toVariant().toMap();

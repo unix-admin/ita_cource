@@ -2,13 +2,11 @@
 #define TWEETSSEARCH_H
 
 #include <QWidget>
+#include <QScrollBar>
 #include "twitter.h"
-//#include <QUrl>
-//#include <QMovie>
-//#include <QMap>
-//#include <QJsonDocument>
 #include "parser.h"
 #include "requests.h"
+
 enum loadingImage{
      ON=0
     ,OFF
@@ -25,23 +23,23 @@ class TweetsSearch : public QWidget
 public:
     explicit TweetsSearch(QWidget *parent = 0);
     ~TweetsSearch();
-    void prepare(Twitter *clsTwitter);
+    void prepare();
 
 private:
     Ui::TweetsSearch *ui;
     Twitter *twitter;
     QMovie* movie;
     Parser *clsParser;
-    std::string nextResultsParameters;
-    QStringList *metadata;
+    std::string nextResultsParameters;    
+    QString maxTweet;
+    QString minTweet;
+    int scroolPosition;
+    bool next;
 private slots:
     void startSearch();
-    void tweetSearchFinished();
-    void replyFinished();
     void nextResults();
-    void previousResults();
-private:
-    void parseSearchedTweets(QMap<QString,QVariant> searchedTweets);
+    void previousResults();   
+private:    
     void showLoadingImage(loadingImage signal);
 };
 

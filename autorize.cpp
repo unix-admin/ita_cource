@@ -5,18 +5,21 @@ autorize::autorize(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::autorize)
 {
+    clsTwitter = Twitter::getcls();
     ui->setupUi(this);
+    db = new DataBase;
     connect(ui->webView,SIGNAL(loadFinished(bool)), this, SLOT(changeUrl()));    
 }
 
 autorize::~autorize()
 {
+    delete db;
     delete ui;
 }
 
-void autorize::getAutorisation(Twitter *pTwitter)
+void autorize::getAutorisation()
 {
-    clsTwitter = pTwitter;
+    clsTwitter = Twitter::getcls();
     QUrl url(clsTwitter->getRequestToken());
     urlChange(url);   
     show();
@@ -38,7 +41,7 @@ void autorize::urlChange(QUrl url)
 void autorize::showPinWindow()
 {
     setPIN *pin = new setPIN;
-    pin->getTwitter(clsTwitter);
+    pin->getTwitter();
     pin->exec();
     if (pin->checkPin == 1)
     {
@@ -52,7 +55,7 @@ void autorize::showPinWindow()
     QString displayName = response.queryItemValue("screen_name");
     QString accessToken = response.queryItemValue("oauth_token");
     QString accessTokenSecret = response.queryItemValue("oauth_token_secret");
-    DataBase *db = DataBase::getInstance();
+
     if (db->checkUser(displayName,BY_DISPLAY_NAME))
     {
         QMessageBox message;
@@ -66,6 +69,7 @@ void autorize::showPinWindow()
     delete pin;
     QWebSettings::clearMemoryCaches();
     this->deleteLater();
+    emit formClosed();
     close();
     }
     else

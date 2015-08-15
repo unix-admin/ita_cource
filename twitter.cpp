@@ -9,6 +9,7 @@
 #include <QJsonDocument>
 #include <QVariant>
 #include <QMap>
+#include "database.h"
 Twitter* Twitter::instance = 0;
 
 Twitter::Twitter()
@@ -24,9 +25,24 @@ Twitter::Twitter()
     oauthClient = new OAuth::Client(oauthConsumer);
     userTimeLineMap = new QMap<QString, QVariant>;
     userTimeLine = new QString;    
-    userData.accessTokenKey = "";
-    userData.accessTokenSecret = "";
+    twitterUserData.accessTokenKey = "";
+    twitterUserData.accessTokenSecret = "";
     request_token = new OAuth::Token;
+    QFile database("data.db3");
+    if (database.exists())
+    {
+        twitterDB = QSqlDatabase::addDatabase("QSQLITE");
+        twitterDB.setDatabaseName("data.db3");
+        databaseStatus = true;
+    }
+    else
+    {
+        twitterDB = QSqlDatabase::addDatabase("QSQLITE");
+        twitterDB.setDatabaseName("data.db3");
+        databaseStatus = false;
+    }
+
+    networkStatus = false;
 }
 
 QUrl Twitter::getRequestToken()
@@ -68,30 +84,30 @@ void Twitter::setPin(std::string PIN)
 QUrl Twitter::generateQueryString(std::string url, std::string parameters)
 {
     OAuth::Consumer consumer(key, secret);
-    OAuth::Token token(userData.accessTokenKey.toStdString(), userData.accessTokenSecret.toStdString());
+    OAuth::Token token(twitterUserData.accessTokenKey.toStdString(), twitterUserData.accessTokenSecret.toStdString());
     OAuth::Client oauthClient(&consumer, &token);
     std::string oAuthQueryString = oauthClient.getURLQueryString(OAuth::Http::Get, url + "?" + parameters);
     return QUrl(QString::fromStdString(url+"?"+oAuthQueryString));
 }
 
-void Twitter::setUserData(DataBase::userData data)
+void Twitter::setUserData(userData data)
 {
-    userData = data;
+    twitterUserData = data;
 }
 
-void Twitter::setUserSettings(DataBase::userSettings settings)
+void Twitter::setUserSettings(userSettings settings)
 {
-    userSettings = settings;
+    twitterUserSettings = settings;
 }
 
-DataBase::userData *Twitter::getUserData()
+Twitter::userData *Twitter::getUserData()
 {
-    return &userData;
+    return &twitterUserData;
 }
 
-DataBase::userSettings *Twitter::getUserSettings()
+Twitter::userSettings *Twitter::getUserSettings()
 {
-    return &userSettings;
+    return &twitterUserSettings;
 }
 
 void Twitter::setLastSyncTime(QTime time)
@@ -112,6 +128,31 @@ QStringList Twitter::getSyncedTimelines()
 QTime Twitter::getLastSyncTime()
 {
     return LastSync;
+}
+
+QSqlDatabase Twitter::getDatabase()
+{
+    return twitterDB;
+}
+
+void Twitter::setNetworkStatus(bool status)
+{
+    networkStatus = status;
+}
+
+bool Twitter::getNetworkStatus()
+{
+    return networkStatus;
+}
+
+bool Twitter::getDatabaseStatus()
+{
+    return databaseStatus;
+}
+
+void Twitter::setDatabaseStatus(bool status)
+{
+    databaseStatus = status;
 }
 
 void Twitter::setSyncedUsers(QStringList syncUsers)

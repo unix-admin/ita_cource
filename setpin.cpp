@@ -16,9 +16,9 @@ setPIN::~setPIN()
     delete ui;
 }
 
-void setPIN::getTwitter(Twitter *clsTwitter)
+void setPIN::getTwitter()
 {
-    twitter = clsTwitter;
+    twitter = Twitter::getcls();
 
 }
 

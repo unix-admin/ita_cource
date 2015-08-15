@@ -7,5 +7,6 @@
         <file>data/images/loading.gif</file>
         <file>data/images/loading_small.gif</file>
         <file>data/images/Delete.ico</file>
+        <file>data/database.sql</file>
     </qresource>
 </RCC>

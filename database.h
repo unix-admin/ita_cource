@@ -1,3 +1,4 @@
+#include "twitter.h"
 #ifndef DATABASE_H
 #define DATABASE_H
 
@@ -6,6 +7,7 @@
 #include <QSqlQuery>
 #include <QMessageBox>
 #include <QStringList>
+
 
 enum userparameters{
      BY_NAME =0
@@ -25,30 +27,7 @@ class DataBase : public QObject
 {
     Q_OBJECT
 public:
-    struct userData
-    {
-        QString id;
-        QString name;
-        QString twitterID;
-        QString accessTokenKey;
-        QString accessTokenSecret;
-        QString screen_name;
-        QString description;
-        QString statuses_count;
-        QString friends_count;
-        QString followers_count;
-        QString profile_image_url;
-        QByteArray profile_image_data;
-    };
-    struct userSettings
-    {
-        QString timelineTweetsByPage;
-        QString searchTweetsByPage;
-        QString searchUsersByPage;
-        QString searchTweetsToDatabase;
-        QString refreshTime;
-    };
-    struct tweetsData
+    struct tweets
     {
         QString tweetID;
         QString tweetTime;
@@ -57,39 +36,35 @@ public:
         QString twitterUserID;
         QString searchID;
     };
-    static DataBase * getInstance() {
-            if(!p_instance)
-                p_instance = new DataBase();
-            return p_instance;
-    }
+     DataBase();
+    void createDatabase();
     QStringList getUsers();
-    userSettings getSettings(QString userID);
+    Twitter::userSettings getSettings(QString userID);
     void setSettings(QString userID, QStringList settings);
-    userData getData (QString parameter, userparameters type);
+    Twitter::userData getData (QString parameter, userparameters type);
     void addNewUser(QString accessToken, QString accessTokenSecret, QString displayName);
     bool checkUser(QString parameter, userparameters queryType);
     bool checkReadableUser(QString userID, QString twitterID);
     QString getLastID();
-    void updateNewUserData(QString parameter, userData *data);
-    void addReadableUser(userData *data, QString senderID, queryTypes typeQuery);
-    void insertTweetsToDatabase(tweetsData *dataToInsert);
-    QList<tweetsData> getTimeline(QString maxTweetID, QString userID, int leftLimit, int rightLimit, queryTypes type);
+    void updateNewUserData(QString parameter, Twitter::userData *data);
+    void addReadableUser(Twitter::userData *data, QString senderID, queryTypes typeQuery);
+    void insertTweetsToDatabase(QList<tweets> *dataToInsert);
+    QList<Twitter::tweetsData> getTimeline(QString maxTweetID, QString userID, int leftLimit, int rightLimit, queryTypes type);
     void deleteUser(QString twitterID, QString readerID);
-    int countRecordsInVirtualTimeLine(QString userID, QString maxTweetID);
+    int countRecordsInTimeLine(QString userID, QString maxTweetID, queryTypes type);
     int countReadableUsers(QString userID);
     void updateUserData(QString twitterID, QString parameter, QVariant value);
-    QList<userData> getReadableUsers(QString userID);
+    QList<Twitter::userData> getReadableUsers(QString userID);
     QStringList getUsersForSync(QString userID);
     QString getLastTweetID(QString twitterID);
 
-private:
-    static DataBase * p_instance;
-    DataBase();
-    DataBase( const DataBase& );
-    DataBase& operator=( DataBase& );
-    void connect();
-    QSqlDatabase tweetsDB;
+private:    
+    void connect();    
     void disconnect();
+    Twitter *twitter;
+    QSqlDatabase twitterDB;
+private slots:
+    void process();
 
 signals:
     workFinished();

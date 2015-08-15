@@ -8,10 +8,10 @@ ReadableUsers::ReadableUsers(QWidget *parent) :
 
     ui->setupUi(this);
     buttonIcon.addFile(":/data/images/Delete.ico");
-    database = DataBase::getInstance();
+    database = new DataBase;
     clsTwitter = Twitter::getcls();
     readableUsersCount = database->countReadableUsers(clsTwitter->getUserData()->id);
-    QList<DataBase::userData> myReadableUsers = database->getReadableUsers(clsTwitter->getUserData()->id);
+    QList<Twitter::userData> myReadableUsers = database->getReadableUsers(clsTwitter->getUserData()->id);
     layout = new QGridLayout(ui->scrollArea);
     layout->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
@@ -42,6 +42,7 @@ ReadableUsers::ReadableUsers(QWidget *parent) :
 
 ReadableUsers::~ReadableUsers()
 {
+    delete database;
     delete ui;
 }
 

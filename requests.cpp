@@ -2,10 +2,10 @@
 #include <QDebug>
 Requests::Requests()
 {
-
+    twitter = Twitter::getcls();
 }
 
-QByteArray Requests::getRequest(requestType type, std::string parameters, std::string parameters2, Twitter *clsTwitter)
+QByteArray Requests::getRequest(requestType type, std::string parameters, std::string parameters2)
 {
     QEventLoop loop;
     QNetworkAccessManager *manager = new QNetworkAccessManager;
@@ -14,32 +14,32 @@ QByteArray Requests::getRequest(requestType type, std::string parameters, std::s
     switch (type) {
         case GET_USER:
         {
-            request.setUrl(clsTwitter->generateQueryString("https://api.twitter.com/1.1/users/show.json",parameters+parameters2));
+            request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/users/show.json",parameters+parameters2));
             break;
         }
         case GET_HOME_TIMELINE:
         {
-            request.setUrl(clsTwitter->generateQueryString("https://api.twitter.com/1.1/statuses/home_timeline.json",parameters+parameters2));
+            request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/statuses/home_timeline.json",parameters+parameters2));
             break;
         }
         case GET_USER_TIMELINE:
         {
-            request.setUrl(clsTwitter->generateQueryString("https://api.twitter.com/1.1/statuses/user_timeline.json","user_id="+parameters+parameters2));
+            request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/statuses/user_timeline.json","user_id="+parameters+parameters2));
             break;
         }
         case TWEETS_SEARCH:
         {
-            request.setUrl(clsTwitter->generateQueryString("https://api.twitter.com/1.1/search/tweets.json","q=%23"+QUrl::toPercentEncoding(QString::fromStdString(parameters)).toStdString()+parameters2));
+            request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/search/tweets.json","q=%23"+QUrl::toPercentEncoding(QString::fromStdString(parameters)).toStdString()+parameters2));
         break;
         }
         case TWEETS_SEARCH_NAVIGATE:
         {
-            request.setUrl(clsTwitter->generateQueryString("https://api.twitter.com/1.1/search/tweets.json",parameters+parameters2));
+            request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/search/tweets.json",parameters+parameters2));
             break;
         }
         case GET_USER_BY_ID:
         {
-            request.setUrl(clsTwitter->generateQueryString("https://api.twitter.com/1.1/users/show.json","user_id="+parameters+parameters2));
+            request.setUrl(twitter->generateQueryString("https://api.twitter.com/1.1/users/show.json","user_id="+parameters+parameters2));
             break;
         }
     }
