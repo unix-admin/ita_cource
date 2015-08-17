@@ -39,8 +39,7 @@ public:
     {
         QString timelineTweetsByPage;
         QString searchTweetsByPage;
-        QString searchUsersByPage;
-        QString searchTweetsToDatabase;
+        QString searchUsersByPage;        
         QString refreshTime;
     };
     struct tweetsData
@@ -49,8 +48,7 @@ public:
         QString tweetTime;
         QString username;
         QString text;
-        QString twitterUserID;
-        QString searchID;
+        QString twitterUserID;        
     };
 
 

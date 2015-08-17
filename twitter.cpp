@@ -168,7 +168,7 @@ void Twitter::setSyncedTimelines(QStringList syncTimelines)
 
 void Twitter::fin()
 {
-    qDebug()<< "Finished";
+
 }
 
 QByteArray Twitter::nonce()

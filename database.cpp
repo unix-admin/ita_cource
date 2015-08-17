@@ -102,7 +102,7 @@ void DataBase::updateNewUserData(QString id, Twitter::userData *data )
     updateUserDataQuery.finish();
     queryString = "INSERT INTO settings (userID, timelineTweetsByPage," \
                   "searchTweetsByPage, searchUsersByPage, "\
-                  "searchTweetsToDatabase, refreshTime) VALUES ("+id+",5,10,5,100,1)";
+                  "tweetsToDatabase, refreshTime) VALUES ("+id+",5,10,5,100,1)";
     updateUserDataQuery.prepare(queryString);
     updateUserDataQuery.exec();
     disconnect();
@@ -142,28 +142,24 @@ void DataBase::insertTweetsToDatabase(QList<tweets> *dataToInsert)
     connect();
     QSqlQuery insertTweetsToDatabaseQuery;
     QString queryString = "";
-    insertTweetsToDatabaseQuery.prepare("INSERT INTO tweets (tweetID, tweetTime, username, text, userID, searchID) "\
-                                        " VALUES(:tweetID,:tweetTime,:username,:text,:twitterUserID,:searchID)" );
+    insertTweetsToDatabaseQuery.prepare("INSERT INTO tweets (tweetID, tweetTime, username, text, userID) "\
+                                        " VALUES(:tweetID,:tweetTime,:username,:text,:twitterUserID)" );
 
-    QVariantList tweetID,tweetTime,username,text,twitterUserID,searchID;
+    QVariantList tweetID,tweetTime,username,text,twitterUserID;
     for (int i=0; i< dataToInsert->count();i++)
     {
         tweetID.append(dataToInsert->at(i).tweetID);
         tweetTime.append(dataToInsert->at(i).tweetTime);
         username.append(dataToInsert->at(i).username);
         text.append(dataToInsert->at(i).text);
-        twitterUserID.append(dataToInsert->at(i).twitterUserID);
-        searchID.append(dataToInsert->at(i).searchID);
-        if(!insertTweetsToDatabaseQuery.execBatch())
-            qDebug() << insertTweetsToDatabaseQuery.lastError();
+        twitterUserID.append(dataToInsert->at(i).twitterUserID);        
     }
 
     insertTweetsToDatabaseQuery.addBindValue(tweetID);
     insertTweetsToDatabaseQuery.addBindValue(tweetTime);
     insertTweetsToDatabaseQuery.addBindValue(username);
     insertTweetsToDatabaseQuery.addBindValue(text);
-    insertTweetsToDatabaseQuery.addBindValue(twitterUserID);
-    insertTweetsToDatabaseQuery.addBindValue(searchID);
+    insertTweetsToDatabaseQuery.addBindValue(twitterUserID);    
     if(!insertTweetsToDatabaseQuery.execBatch())
         qDebug() << insertTweetsToDatabaseQuery.lastError();
     twitterDB.commit();
@@ -386,8 +382,7 @@ Twitter::userSettings DataBase::getSettings(QString userID)
     while (getUsersQuery.next()) {
         result.timelineTweetsByPage = getUsersQuery.value(1).toString();
         result.searchTweetsByPage = getUsersQuery.value(2).toString();
-        result.searchUsersByPage = getUsersQuery.value(3).toString();
-        result.searchTweetsToDatabase = getUsersQuery.value(4).toString();
+        result.searchUsersByPage = getUsersQuery.value(3).toString();        
         result.refreshTime = getUsersQuery.value(5).toString();
     }
     disconnect();
@@ -400,9 +395,8 @@ void DataBase::setSettings(QString userID, QStringList settings)
     QSqlQuery setSettingsQuery;    
     setSettingsQuery.exec("UPDATE settings SET timelineTweetsByPage="+settings.value(0)\
                           +", searchTweetsByPage="+settings.value(1)\
-                          +", searchUsersByPage="+settings.value(2) \
-                          +", searchTweetsToDatabase="+settings.value(3) \
-                          + ", refreshTime="+settings.value(4)+" WHERE userID="+userID);
+                          +", searchUsersByPage="+settings.value(2) \                          
+                          + ", refreshTime="+settings.value(3)+" WHERE userID="+userID);
 
     disconnect();
     emit workFinished();
@@ -488,11 +482,8 @@ void DataBase::createDatabase()
     createQuery.exec("CREATE TABLE settings (userID INTEGER, timelineTweetsByPage INTEGER, searchTweetsByPage INTEGER, searchUsersByPage INTEGER, searchTweetsToDatabase INTEGER, refreshTime INTEGER)");
     createQuery.finish();
     twitterDB.commit();
-    createQuery.exec("CREATE TABLE searches (userID INTEGER, hashtag VARCHAR (255), lastTweetID INTEGER)");
 
-    createQuery.finish();
-    twitterDB.commit();
-    createQuery.exec("CREATE TABLE tweets (tweetID INTEGER, tweetTime VARCHAR (100), username VARCHAR (255), text VARCHAR (255), userID INTEGER DEFAULT (0), searchID INTEGER DEFAULT (0))");
+    createQuery.exec("CREATE TABLE tweets (tweetID INTEGER, tweetTime VARCHAR (100), username VARCHAR (255), text VARCHAR (255), userID INTEGER DEFAULT (0))");
 
     createQuery.finish();
     twitterDB.commit();

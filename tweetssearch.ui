@@ -68,6 +68,11 @@
      <height>23</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+    </font>
+   </property>
    <property name="text">
     <string>Предыдущая страница</string>
    </property>
@@ -80,6 +85,11 @@
      <width>131</width>
      <height>23</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+    </font>
    </property>
    <property name="text">
     <string>Следующая страница</string>

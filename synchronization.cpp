@@ -72,8 +72,7 @@ void Synchronization::tweetsToDatabase(QList<QVariant> *tweets, QString twitterU
            tweetsToDB.tweetID =tweetMap.find("id_str").value().toString();
            tweetsToDB.tweetTime = parser->dateFormat(tweetMap.find("created_at").value());
            tweetsToDB.text = tweetMap.find("text").value().toString();
-           tweetsToDB.twitterUserID = twitterUserID;
-           tweetsToDB.searchID = "0";
+           tweetsToDB.twitterUserID = twitterUserID;           
            user = tweetMap.find("user");
            userMap = user.value().toMap();
            tweetsToDB.username= userMap.find("screen_name").value().toString();

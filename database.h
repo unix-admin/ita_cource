@@ -33,8 +33,7 @@ public:
         QString tweetTime;
         QString username;
         QString text;
-        QString twitterUserID;
-        QString searchID;
+        QString twitterUserID;        
     };
      DataBase();
     void createDatabase();

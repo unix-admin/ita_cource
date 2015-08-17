@@ -9,8 +9,7 @@ Settings::Settings(QWidget *parent) :
     settingsDB = new DataBase;
     connect(ui->sliderUsertimeline, SIGNAL(valueChanged(int)),this,SLOT(changeValue()));
     connect(ui->sliderSearchedTweets, SIGNAL(valueChanged(int)),this,SLOT(changeValue()));
-    connect(ui->sliderSearchedUsers, SIGNAL(valueChanged(int)),this,SLOT(changeValue()));
-    connect(ui->sliderMaxTweets, SIGNAL(valueChanged(int)),this,SLOT(changeValue()));
+    connect(ui->sliderSearchedUsers, SIGNAL(valueChanged(int)),this,SLOT(changeValue()));    
     connect(ui->sliderTimeToSync, SIGNAL(valueChanged(int)),this,SLOT(changeValue()));
     connect(ui->buttonBox,SIGNAL(accepted()),this,SLOT(saveChanges()));
     connect(ui->buttonBox,SIGNAL(rejected()),this,SLOT(close()));
@@ -35,8 +34,7 @@ void Settings::getSettings()
     userSettings = settingsDB->getSettings(userID);
     ui->sliderUsertimeline->setValue(userSettings.timelineTweetsByPage.toInt());
     ui->sliderSearchedTweets->setValue(userSettings.searchTweetsByPage.toInt());
-    ui->sliderSearchedUsers->setValue(userSettings.searchUsersByPage.toInt());
-    ui->sliderMaxTweets->setValue(userSettings.searchTweetsToDatabase.toInt());
+    ui->sliderSearchedUsers->setValue(userSettings.searchUsersByPage.toInt());    
     ui->sliderTimeToSync->setValue(userSettings.refreshTime.toInt());
 }
 
@@ -51,10 +49,7 @@ void Settings::changeValue()
     }
     if (slider->objectName()=="sliderSearchedUsers") {
         ui->valueMaxUsers->setText(QString::number(ui->sliderSearchedUsers->value()));
-    }
-    if (slider->objectName()=="sliderMaxTweets") {
-        ui->valueMaxTweetsToSync->setText(QString::number(ui->sliderMaxTweets->value()));
-    }
+    }    
     if (slider->objectName()=="sliderTimeToSync") {
         ui->valueSyncTime->setText(QString::number(ui->sliderTimeToSync->value()));
     }
@@ -65,10 +60,10 @@ void Settings::saveChanges()
     QStringList values;
     values.append(ui->valueTweetsUsertimeline->text());
     values.append(ui->valueMaxSearchTweets->text());
-    values.append(ui->valueMaxUsers->text());
-    values.append(ui->valueMaxTweetsToSync->text());
+    values.append(ui->valueMaxUsers->text());    
     values.append(ui->valueSyncTime->text());
     settingsDB->setSettings(userID,values);
+
     close();
 }
 

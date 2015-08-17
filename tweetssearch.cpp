@@ -37,7 +37,7 @@ void TweetsSearch::startSearch()
         QString tweets;        
         Requests *twitterRequest = new Requests;
         QByteArray request;
-        request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count=100");
+        request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count="+twitter->getUserSettings()->searchTweetsByPage.toStdString());
         tweets = clsParser->parseTweets(&request);
         maxTweet = clsParser->maxTweetID;
         minTweet = clsParser->minTweetID;        
@@ -54,8 +54,7 @@ void TweetsSearch::nextResults()
     QString tweets;
     Requests *twitterRequest = new Requests;
     QByteArray request;
-    request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count=100&max_id="+minTweet.toStdString());
-    qDebug() << minTweet;
+    request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count="+twitter->getUserSettings()->searchTweetsByPage.toStdString()+"&max_id="+minTweet.toStdString());
     tweets = clsParser->parseTweets(&request);
     maxTweet = clsParser->maxTweetID;
     minTweet = clsParser->minTweetID;
@@ -72,8 +71,7 @@ void TweetsSearch::previousResults()
     QString tweets;
     Requests *twitterRequest = new Requests;
     QByteArray request;
-    request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count=100&since_id="+maxTweet.toStdString());
-    qDebug() << minTweet;
+    request = twitterRequest->getRequest(TWEETS_SEARCH,ui->searchField->text().toStdString(),"&count="+twitter->getUserSettings()->searchTweetsByPage.toStdString()+"&since_id="+maxTweet.toStdString());
     tweets = clsParser->parseTweets(&request);
     maxTweet = clsParser->maxTweetID;
     minTweet = clsParser->minTweetID;
