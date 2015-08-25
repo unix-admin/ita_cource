@@ -63,6 +63,7 @@ private slots:
     void syncNeeded();
     void syncFinished();
     void updateData();
+    void replyFinished();
 private:
     void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;
     QString getTimeLine(int left, int right, QString maxTweetID, int type);

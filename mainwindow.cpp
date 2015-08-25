@@ -77,7 +77,7 @@ void MainWindow::networkConnection()
 {
     netError = false;
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
-    connect(manager, SIGNAL(finished(QNetworkReply*)),this, SLOT(replyFinished(QNetworkReply*)));
+    connect(manager, SIGNAL(finished(QNetworkReply*)),this, SLOT(replyFinished()));
     QNetworkRequest request;
     request.setUrl(QUrl("http://abs.twimg.com/favicons/favicon.ico"));
     request.setRawHeader("User-Agent", "MyOwnBrowser 1.0");
@@ -95,6 +95,7 @@ void MainWindow::networkError()
 
 void MainWindow::networkOk()
 {
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     tw->setNetworkStatus(true);
     if (netError)
     {
@@ -108,6 +109,7 @@ void MainWindow::networkOk()
         ui->netImg->setPixmap(QPixmap(":/data/images/connected.png"));
 
     }
+    reply->deleteLater();
 
 }
 
@@ -246,14 +248,16 @@ void MainWindow::syncNeeded()
 
 void MainWindow::syncFinished()
 {
+
     ui->syncLabel->setVisible(false);
     ui->syncText->setVisible(false);    
     Synchronization *sync = qobject_cast<Synchronization *>(sender());
     tw->setSyncedUsers(sync->getUpdatedUsers());
     tw->setSyncedTimelines(sync->getUpdatedTimelines());
-    tw->setLastSyncTime(QTime::currentTime());
-    delete sync;
+    tw->setLastSyncTime(QTime::currentTime());    
+    sync->deleteLater();
     updateData();
+
 }
 
 void MainWindow::updateData()
@@ -350,6 +354,12 @@ void MainWindow::updateData()
         }
         lastSynchronization = tw->getLastSyncTime();
     }
+}
+
+void MainWindow::replyFinished()
+{
+    QNetworkAccessManager *manager = qobject_cast<QNetworkAccessManager *>(sender());
+    manager->deleteLater();
 }
 
 void MainWindow::closeEvent(QCloseEvent *)
