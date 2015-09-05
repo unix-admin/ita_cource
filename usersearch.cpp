@@ -17,6 +17,7 @@ UserSearch::UserSearch(QWidget *parent) :
     ui->pushButton_2->setVisible(false);
     ui->pushButton_3->setVisible(false);
     ui->scrollArea->setVisible(false);
+    resized = false;
     this->resize(this->geometry().width(),this->geometry().height()-500);
 }
 
@@ -226,7 +227,11 @@ void UserSearch::setVisibleArea(int searchedResults)
 void UserSearch::setDefaultWindow()
 {
     // this->resize(400,590);
-    this->setGeometry(this->x(),this->y()-200,400,590);
+    if (!resized)
+    {
+        this->setGeometry(this->x(),this->y()-200,400,590);
+        resized = true;
+    }
     ui->scrollArea->resize(380,500);
     ui->pushButton_2->move(20,560);
     ui->pushButton_3->move(250,560);

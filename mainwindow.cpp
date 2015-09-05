@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->tweetSearchButton,SIGNAL(clicked()),SLOT(tweetSearch()));   
     connect(ui->settingsButton,SIGNAL(clicked(bool)),this, SLOT(settingsShow()));
     connect(ui->myUsers,SIGNAL(clicked(bool)),this,SLOT(myUserClicked()));
-    connect(tw,SIGNAL(finished()),this, SLOT(userShow()));
+    // connect(tw,SIGNAL(finished()),this, SLOT(userShow()));
     connect(ui->myVirtualTimeline->verticalScrollBar(),SIGNAL(valueChanged(int)),this,SLOT(moved()));
     networkConnection();
     db = new DataBase;
