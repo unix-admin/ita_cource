@@ -29,9 +29,6 @@ public:
 
 signals:
     parseFinished();
-public slots:
-    void quit();
-private :
 
 };
 

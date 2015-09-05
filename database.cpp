@@ -14,16 +14,11 @@ void DataBase::disconnect()
     }
 }
 
-void DataBase::process()
-{
-
-}
-
 bool DataBase::checkUser(QString parameter, userparameters queryType)
 {
     bool result = false;
     connect();
-    QString queryString;
+    QString queryString;    
     switch (queryType) {
     case BY_ID:
     {
@@ -141,7 +136,8 @@ void DataBase::insertTweetsToDatabase(QList<tweets> *dataToInsert)
 {
     connect();
     QSqlQuery insertTweetsToDatabaseQuery;
-    QString queryString = "";
+    //QString queryString = "";
+    twitterDB.transaction();
     insertTweetsToDatabaseQuery.prepare("INSERT INTO tweets (tweetID, tweetTime, username, text, userID) "\
                                         " VALUES(:tweetID,:tweetTime,:username,:text,:twitterUserID)" );
 
@@ -395,7 +391,7 @@ void DataBase::setSettings(QString userID, QStringList settings)
     QSqlQuery setSettingsQuery;    
     setSettingsQuery.exec("UPDATE settings SET timelineTweetsByPage="+settings.value(0)\
                           +", searchTweetsByPage="+settings.value(1)\
-                          +", searchUsersByPage="+settings.value(2) \                          
+                          +", searchUsersByPage="+settings.value(2)\
                           + ", refreshTime="+settings.value(3)+" WHERE userID="+userID);
 
     disconnect();
@@ -479,7 +475,7 @@ void DataBase::createDatabase()
 
     createQuery.finish();
     twitterDB.commit();
-    createQuery.exec("CREATE TABLE settings (userID INTEGER, timelineTweetsByPage INTEGER, searchTweetsByPage INTEGER, searchUsersByPage INTEGER, searchTweetsToDatabase INTEGER, refreshTime INTEGER)");
+    createQuery.exec("CREATE TABLE settings (userID INTEGER, timelineTweetsByPage INTEGER, searchTweetsByPage INTEGER, searchUsersByPage INTEGER, tweetsToDatabase INTEGER, refreshTime INTEGER)");
     createQuery.finish();
     twitterDB.commit();
 

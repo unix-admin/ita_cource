@@ -10,7 +10,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 
 {    
-
     ui->setupUi(this);    
     ui->centralWidget->setAttribute(Qt::WA_DeleteOnClose,true);
     ui->myTtwitterTimeline->setReadOnly(true);
@@ -82,7 +81,6 @@ void MainWindow::networkConnection()
     request.setUrl(QUrl("http://abs.twimg.com/favicons/favicon.ico"));
     request.setRawHeader("User-Agent", "MyOwnBrowser 1.0");
     QNetworkReply *reply;
-
     reply = manager->get(request);
     connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),SLOT(networkError()));
     connect(reply,SIGNAL(finished()),this,SLOT(networkOk()));

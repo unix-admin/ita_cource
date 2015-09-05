@@ -23,6 +23,7 @@ void TweetsSearch::prepare()
     connect(ui->searchButton,SIGNAL(clicked(bool)),this,SLOT(startSearch()));
     connect(ui->next,SIGNAL(clicked(bool)),this,SLOT(nextResults()));
     connect(ui->previous,SIGNAL(clicked(bool)),this,SLOT(previousResults()));
+    connect(ui->searchField,SIGNAL(returnPressed()),this,SLOT(startSearch()));
     movie = new QMovie(":/data/images/loading.gif");    
     ui->loadProgress->setMovie(movie);
     nextResultsParameters = "";

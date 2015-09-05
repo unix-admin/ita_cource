@@ -35,7 +35,7 @@ public:
         QString text;
         QString twitterUserID;        
     };
-     DataBase();
+    DataBase();
     void createDatabase();
     QStringList getUsers();
     Twitter::userSettings getSettings(QString userID);
@@ -62,9 +62,6 @@ private:
     void disconnect();
     Twitter *twitter;
     QSqlDatabase twitterDB;
-private slots:
-    void process();
-
 signals:
     workFinished();
     userAdded();
