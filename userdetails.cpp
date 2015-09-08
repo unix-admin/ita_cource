@@ -49,7 +49,9 @@ void UserDetails::prepareData(QString userid)
     else
     {
         databaseUser = true;
+
         getUserinfoFromDatabase(id);
+
     }
 
 
@@ -112,6 +114,7 @@ QString UserDetails::getTimeline(int left, int right, QString userLastTweet)
 
 void UserDetails::toDatabase()
 {
+    ui->buttonToDatabase->setVisible(false);
     if (db->checkUser(userData.screen_name,BY_DISPLAY_NAME))
      {
         db->addReadableUser(&userData,twitter->getUserData()->id,USER_TO_READ);
@@ -121,7 +124,7 @@ void UserDetails::toDatabase()
         db->addReadableUser(&userData,twitter->getUserData()->id,NEW_USER);
         timeLineToDatabase();
      }
-    ui->buttonToDatabase->setVisible(false);
+
 }
 
 void UserDetails::appendTimeline()
