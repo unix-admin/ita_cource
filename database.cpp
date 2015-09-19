@@ -209,13 +209,13 @@ QList<Twitter::tweetsData> DataBase::getTimeline(QString maxTweetID, QString use
     case VIRTUAL_TIMELINE:
     {   queryString = "SELECT tweets.tweetTime, tweets.username, tweets.text FROM tweets, users, readableUsers " \
                       "WHERE tweets.userID=readableUsers.twitterID AND readableUsers.userID = users.userID AND users.userID=:userID" +appendCondition \
-                      +" ORDER BY tweets.tweetID DESC LIMIT" + leftLimitData+" "+rightLimitData;
+                      +" ORDER BY tweets.tweetID DESC LIMIT " + leftLimitData+" "+rightLimitData;
         break;
     }
     case USER_TIMELINE:
     {
         queryString = "SELECT tweets.tweetTime, tweets.username, tweets.text FROM tweets WHERE tweets.userID=:userID"+ appendCondition \
-                      +" ORDER BY tweets.tweetID DESC LIMIT" + leftLimitData+" "+rightLimitData;
+                      +" ORDER BY tweets.tweetID DESC LIMIT " + leftLimitData+" "+rightLimitData;
         break;
     }
     }
@@ -276,12 +276,12 @@ int DataBase::countRecordsInTimeLine(QString userID, QString maxTweetID, queryTy
         appendCondition = " AND tweets.tweetID >"+maxTweetID;
     if (type==VIRTUAL_TIMELINE)
         queryString = "SELECT count() FROM tweets, users, readableUsers " \
-                          "WHERE tweets.userID=readableUsers.twitterID AND readableUsers.userID = users.userID AND users.userID=:userID"+ appendCondition;
+                          "WHERE tweets.userID=readableUsers.twitterID AND readableUsers.userID = users.userID AND users.userID=:userID" + appendCondition;
     else
-        queryString = "SELECT count() FROM tweets WHERE userID=:userID" + appendCondition;
+        queryString = "SELECT count() FROM tweets WHERE userID=:userID"+ appendCondition;
     QSqlQuery countRecordsInTimeLineQuery;
     countRecordsInTimeLineQuery.prepare(queryString);
-    countRecordsInTimeLineQuery.bindValue("userID",userID);
+    countRecordsInTimeLineQuery.bindValue(":userID",userID);
     countRecordsInTimeLineQuery.exec();
     countRecordsInTimeLineQuery.first();
     if (countRecordsInTimeLineQuery.value(0).toString() =="")

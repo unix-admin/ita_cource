@@ -275,12 +275,13 @@ void UserDetails::showResults()
     ui->label_6->setText("Друзья: "+userData.friends_count);
     ui->label_7->setText("Читатели: "+userData.followers_count);
     photo.loadFromData(userData.profile_image_data);
-    this->resize(400,580);
+    this->setGeometry(this->x(),this->y()-150,400,580);
     ui->label->resize(128,128);
     ui->label->setPixmap(photo);
     ui->horizontalLayoutWidget->setVisible(true);
     ui->gridLayoutWidget->setVisible(true);
     ui->userTimeline->setVisible(true);
+
 }
 
 void UserDetails::closeEvent(QCloseEvent *)
