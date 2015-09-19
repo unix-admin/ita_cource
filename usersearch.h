@@ -32,6 +32,7 @@ private:
     QList<QTextEdit*> myListBox;
     int page;
     int userSearchResultsByPage;
+    bool resized;
 private slots:
     void userSearchButtonClick();
     void navigateButtonClick();

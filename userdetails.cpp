@@ -49,7 +49,9 @@ void UserDetails::prepareData(QString userid)
     else
     {
         databaseUser = true;
+
         getUserinfoFromDatabase(id);
+
     }
 
 
@@ -112,6 +114,7 @@ QString UserDetails::getTimeline(int left, int right, QString userLastTweet)
 
 void UserDetails::toDatabase()
 {
+    ui->buttonToDatabase->setVisible(false);
     if (db->checkUser(userData.screen_name,BY_DISPLAY_NAME))
      {
         db->addReadableUser(&userData,twitter->getUserData()->id,USER_TO_READ);
@@ -121,7 +124,7 @@ void UserDetails::toDatabase()
         db->addReadableUser(&userData,twitter->getUserData()->id,NEW_USER);
         timeLineToDatabase();
      }
-    ui->buttonToDatabase->setVisible(false);
+
 }
 
 void UserDetails::appendTimeline()
@@ -229,18 +232,18 @@ void UserDetails::timeLineToDatabase()
  DataBase::tweets tweetsToDB;
  QMap<QString, QVariant>::const_iterator user;
  QList<DataBase::tweets> dataToInsert;  
- if (userData.statuses_count.toInt()%100 > 0)
+ if (userData.statuses_count.toInt()%200 > 0)
     {
-        pages = userData.statuses_count.toInt()/100 +1;
+        pages = userData.statuses_count.toInt()/200 +1;
     }
  else
     {
-         pages = userData.statuses_count.toInt()/100;
+         pages = userData.statuses_count.toInt()/200;
     }
 ui->progressBar->setVisible(true);
  for(int i=0; i<pages; i++)
  {
-    requestData = twitterRequests->getRequest(GET_USER_TIMELINE,userData.twitterID.toStdString(),"&count=100&include_rts=true"\
+    requestData = twitterRequests->getRequest(GET_USER_TIMELINE,userData.twitterID.toStdString(),"&count=200&include_rts=true"\
                                               "&page="+QString::number(i+1).toStdString());
     tweetList = parser->parseTweetsToDatabase(&requestData);
     for ( int t = 0 ; t<tweetList.count(); t++)
@@ -272,12 +275,13 @@ void UserDetails::showResults()
     ui->label_6->setText("Друзья: "+userData.friends_count);
     ui->label_7->setText("Читатели: "+userData.followers_count);
     photo.loadFromData(userData.profile_image_data);
-    this->resize(400,580);
+    this->setGeometry(this->x(),this->y()-150,400,580);
     ui->label->resize(128,128);
     ui->label->setPixmap(photo);
     ui->horizontalLayoutWidget->setVisible(true);
     ui->gridLayoutWidget->setVisible(true);
     ui->userTimeline->setVisible(true);
+
 }
 
 void UserDetails::closeEvent(QCloseEvent *)

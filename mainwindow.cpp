@@ -10,7 +10,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 
 {    
-
     ui->setupUi(this);    
     ui->centralWidget->setAttribute(Qt::WA_DeleteOnClose,true);
     ui->myTtwitterTimeline->setReadOnly(true);
@@ -36,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->tweetSearchButton,SIGNAL(clicked()),SLOT(tweetSearch()));   
     connect(ui->settingsButton,SIGNAL(clicked(bool)),this, SLOT(settingsShow()));
     connect(ui->myUsers,SIGNAL(clicked(bool)),this,SLOT(myUserClicked()));
-    connect(tw,SIGNAL(finished()),this, SLOT(userShow()));
+    // connect(tw,SIGNAL(finished()),this, SLOT(userShow()));
     connect(ui->myVirtualTimeline->verticalScrollBar(),SIGNAL(valueChanged(int)),this,SLOT(moved()));
     networkConnection();
     db = new DataBase;
@@ -82,7 +81,6 @@ void MainWindow::networkConnection()
     request.setUrl(QUrl("http://abs.twimg.com/favicons/favicon.ico"));
     request.setRawHeader("User-Agent", "MyOwnBrowser 1.0");
     QNetworkReply *reply;
-
     reply = manager->get(request);
     connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),SLOT(networkError()));
     connect(reply,SIGNAL(finished()),this,SLOT(networkOk()));

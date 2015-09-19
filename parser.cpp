@@ -109,13 +109,6 @@ QList<QVariant> Parser::parseTweetsToDatabase(QByteArray *data)
     return tweetsList;
 }
 
-void Parser::quit()
-{
-
-
-    qDebug() << "quit";
-}
-
 QString Parser::dateFormat(QVariant value)
 {
     QString result;

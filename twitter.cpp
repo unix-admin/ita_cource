@@ -23,8 +23,6 @@ Twitter::Twitter()
     oauthSignature = "";
     oauthConsumer = new OAuth::Consumer(key,secret);
     oauthClient = new OAuth::Client(oauthConsumer);
-    userTimeLineMap = new QMap<QString, QVariant>;
-    userTimeLine = new QString;    
     twitterUserData.accessTokenKey = "";
     twitterUserData.accessTokenSecret = "";
     request_token = new OAuth::Token;
@@ -165,23 +163,5 @@ void Twitter::setSyncedTimelines(QStringList syncTimelines)
 {
     syncedTimelines = syncTimelines;
 }
-
-void Twitter::fin()
-{
-
-}
-
-QByteArray Twitter::nonce()
-{
-        static bool firstTime = true;
-        if (firstTime) {
-            firstTime = false;
-            qsrand(QTime::currentTime().msec());
-        }
-        QString u = QString::number(QDateTime::currentDateTimeUtc().toTime_t());
-        u.append(QString::number(qrand()));
-        return u.toLatin1();
-}
-
 
 

@@ -20,6 +20,7 @@ public:
 private:
     Ui::setPIN *ui;
     Twitter *twitter;
+
 private slots:
     void buttonOKClicked();
 };

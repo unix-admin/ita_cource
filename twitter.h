@@ -51,6 +51,10 @@ public:
         QString twitterUserID;        
     };
 
+    struct requestParamerers{
+        QByteArray name;
+        QByteArray value;
+    };
 
 private:
     static Twitter *instance;
@@ -78,22 +82,11 @@ public:
     QStringList getSyncedUsers();
     QStringList getSyncedTimelines();
     QTime getLastSyncTime();
-    QSqlDatabase getDatabase();
-    userData twitterUserData;
-    userSettings twitterUserSettings;
+    QSqlDatabase getDatabase();    
     void setNetworkStatus(bool status);
     bool getNetworkStatus();
     bool getDatabaseStatus();
     void setDatabaseStatus(bool status);
-struct requestParamerers{
-    QByteArray name;
-    QByteArray value;
-};
-public slots:
-        void fin();
-
-
-signals: finished();
 
 private :
           Twitter();
@@ -111,18 +104,14 @@ private :
           OAuth::Client *oauthClient;
           OAuth::Consumer *oauthConsumer;
           OAuth::Token *request_token;
-          QByteArray nonce();
-          QMap<QString, QVariant> *userTimeLineMap;
-          QString *userTimeLine;
-          QTextEdit *returnText;
           bool networkStatus;
           QStringList syncedUsers;
           QStringList syncedTimelines;
           QTime LastSync;
+          userData twitterUserData;
+          userSettings twitterUserSettings;
           QSqlDatabase twitterDB;
           bool databaseStatus;
-
-
 };
 
 #endif // TWITTER_H

@@ -28,7 +28,7 @@ public:
 private:
     Ui::TweetsSearch *ui;
     Twitter *twitter;
-    QMovie* movie;
+    QMovie *movie;
     Parser *clsParser;
     std::string nextResultsParameters;    
     QString maxTweet;

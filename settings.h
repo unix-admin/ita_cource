@@ -26,9 +26,6 @@ private:
     void setSettings();
 signals:
     closed();
-
-
-
 private slots:
     void changeValue();
     void saveChanges();

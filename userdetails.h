@@ -46,15 +46,14 @@ private:
     QTimer *syncTimer;
     QTime lastSynchronization;
     QString lastTweet;
+    bool databaseUser;
 private:
     void getUserinfoFromTwitter(std::string id);
     void getUserinfoFromDatabase(QString id);
     QString getTimeline(int left, int right, QString userLastTweet);
     void timeLineToDatabase();
-    void showResults();
-    bool databaseUser;
+    void showResults();   
     void closeEvent(QCloseEvent*) Q_DECL_OVERRIDE;
-
 signals:
     formClosed();
     finishedRequest();
